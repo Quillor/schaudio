@@ -1,20 +1,19 @@
 #!/bin/bash
-# Publish every finished chapter within minutes, regardless of which worker
-# finished it. Deploys are already chapter-triggered inside overnight.py; this
-# is the safety net for chapters completed by workers that do not deploy
-# (agent2's legacy processes). A deploy ships the whole books tree, so one
-# deploy publishes everything finished up to that moment.
+# Publish watcher: whenever a new chapter manifest appears, sync app/books to
+# R2 (incremental). Covers workers of any code age; replaces the old Vercel
+# per-chapter deploys entirely.
 cd /Users/timrosenberg/claude/schaudio
+log() { .venv-tts/bin/python -c "import sys; sys.path.insert(0,'tools'); import claim; claim.log('claude-autodeploy', '$1')"; }
 last=$(find app/books -name 'sam-ch*.json' | wc -l)
 while :; do
-  sleep 180
+  sleep 120
   now=$(find app/books -name 'sam-ch*.json' | wc -l)
   if [ "$now" -gt "$last" ]; then
-    if npx --no-install vercel deploy --prod --yes >/dev/null 2>&1; then
-      .venv-tts/bin/python -c "import sys; sys.path.insert(0,'tools'); import claim; claim.log('claude-autodeploy','deploy OK (manifests $last -> $now)')"
+    if .venv-tts/bin/python tools/publish_r2.py books >/dev/null 2>&1; then
+      log "R2 publish OK (manifests $last -> $now)"
       last=$now
     else
-      .venv-tts/bin/python -c "import sys; sys.path.insert(0,'tools'); import claim; claim.log('claude-autodeploy','deploy FAILED, will retry next tick')"
+      log "R2 publish FAILED, retrying next tick"
     fi
   fi
 done
