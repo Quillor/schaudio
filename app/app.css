@@ -1128,3 +1128,31 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
   .sc-desk-chapters .sc-chapter { min-block-size: 48px; }
   .sc-desk-chapters .sc-chapter-bar { max-inline-size: 150px; }
 }
+
+/* Chapter rows: the trailing play/volume icon is the row's right-hand anchor.
+   margin-inline-start:auto pins it to the end regardless of how tall the meta
+   column grows, and align-self keeps it centred against a two- or three-line
+   row rather than riding up with align-items:flex-start. */
+.sc-chapter > i {
+  flex: none;
+  margin-inline-start: auto;
+  align-self: center;
+  inline-size: 16px;
+  text-align: center;
+}
+/* A <button> is shrink-to-fit, so a short chapter title made a short row and the
+   trailing icon sat wherever the text ended. Only two-line titles happened to
+   fill the column, which is why some rows looked aligned and others did not.
+   Stretching every row to the full column width is what actually anchors the
+   icon to a single right edge. */
+.sc-chapter { inline-size: 100%; }
+
+/* Rows need room for the "Now playing" badge, which is taller than the plain
+   sub-text it replaces. */
+.sc-chapter { min-block-size: 64px; padding-block: var(--space-3); }
+.sc-chapter-sub { display: flex; align-items: center; gap: var(--space-2); min-block-size: 18px; }
+.sc-chapter-badge { line-height: 1.5; white-space: nowrap; }
+
+@media (min-width: 1200px) {
+  .sc-desk-chapters .sc-chapter { min-block-size: 58px; }
+}

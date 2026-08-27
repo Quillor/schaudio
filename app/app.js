@@ -456,7 +456,7 @@ function renderChapters() {
         <span class="sc-chapter-n">${finished && !active ? '<i class="fa-solid fa-check"></i>' : ch.n}</span>
         <span class="sc-chapter-meta">
           <span class="sc-chapter-title">${esc(ch.title)}</span>
-          <span class="sc-chapter-sub">${status}${estMs ? ` · ${fmt(estMs)}` : ""}</span>
+          <span class="sc-chapter-sub">${status}${estMs ? `${active ? "" : " · "}${fmt(estMs)}` : ""}</span>
           ${pos > 1000 && !finished
             ? `<span class="sc-chapter-bar"><span style="inline-size:${pct}%"></span></span>` : ""}
         </span>

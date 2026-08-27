@@ -127,6 +127,14 @@ def _rejoin(match):
     return f"{left}-{right}" if tail in HYPHEN_PREFIXES else f"{left}{right}"
 
 
+# A numbered list item ("7. Describe the four phases...") is real content even
+# when it is under the 12-word bar that filters out page furniture. Without this
+# every short objective/step silently vanished, leaving lists that skip numbers.
+# Two digits max and a following space keep years ("1963.") and page numbers out;
+# reference entries start with an author name or "(2006).", so they stay dropped.
+LIST_ITEM = re.compile(r"^\d{1,2}[.)]\s+\S")
+
+
 def to_paragraphs(raw):
     raw = re.sub(r"(\w+)-\n(\w+)", _rejoin, raw)
     paras, buf = [], []
@@ -134,7 +142,8 @@ def to_paragraphs(raw):
     def flush():
         if buf:
             p = re.sub(r"\s+", " ", " ".join(buf)).strip()
-            if len(p.split()) >= 12:
+            n_words = len(p.split())
+            if n_words >= 12 or (n_words >= 4 and LIST_ITEM.match(p)):
                 paras.append(p)
             buf.clear()
 
