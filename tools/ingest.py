@@ -135,16 +135,36 @@ def _rejoin(match):
 LIST_ITEM = re.compile(r"^\d{1,2}[.)]\s+\S")
 
 
+# Figure/table credit lines ("Source: Adapted from Krivanek, T. J. ...") and
+# table-cell debris ("15.1 18-29 25.2 30-49 ...") ride along inside the body
+# text of image-heavy textbooks and narrate as gibberish.
+SOURCE_CREDIT = re.compile(r"^(?:[A-Za-z][\w'-]*\s+){0,3}Sources?:\s")
+
+
+def _is_junk(p, n_words):
+    if SOURCE_CREDIT.match(p):
+        return True
+    if n_words < 40:                      # table debris: mostly-numeric tokens
+        toks = p.split()
+        if sum(any(c.isdigit() for c in t) for t in toks) > len(toks) * 0.4:
+            return True
+    return False
+
+
 def to_paragraphs(raw):
     raw = re.sub(r"(\w+)-\n(\w+)", _rejoin, raw)
     paras, buf = [], []
+    seen = set()                # PDF text boxes can repeat verbatim (exercise
+                                # grids); read them once, not four times
 
     def flush():
         if buf:
             p = re.sub(r"\s+", " ", " ".join(buf)).strip()
             n_words = len(p.split())
-            if n_words >= 12 or (n_words >= 4 and LIST_ITEM.match(p)):
+            keep = (n_words >= 12 or (n_words >= 4 and LIST_ITEM.match(p)))
+            if keep and not _is_junk(p, n_words) and p not in seen:
                 paras.append(p)
+                seen.add(p)
             buf.clear()
 
     lines = [l.strip() for l in raw.split("\n")]
@@ -206,9 +226,25 @@ def chapter_spans(reader, chapter_re):
         except Exception:
             continue
         entries.append((title, page))
+    # The last chapter must stop where the back matter (Appendix, Glossary,
+    # References...) begins, not at an arbitrary page cap: a +40 cap silently
+    # amputated Life Span ch15's final six pages, including its summary.
+    # Any outline entry — chapter or not — is a valid terminator.
+    all_marks = []
+    for item in reader.outline:
+        if isinstance(item, list):
+            continue
+        try:
+            all_marks.append(reader.get_destination_page_number(item))
+        except Exception:
+            continue
     spans = []
     for i, (title, start) in enumerate(entries):
-        end = entries[i + 1][1] if i + 1 < len(entries) else min(start + 40, len(reader.pages))
+        if i + 1 < len(entries):
+            end = entries[i + 1][1]
+        else:
+            after = [pg for pg in all_marks if pg > start]
+            end = min(after) if after else len(reader.pages)
         spans.append((title, start, end))
     return spans
 
