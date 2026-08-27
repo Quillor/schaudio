@@ -2,6 +2,8 @@
 # wrong here: .gitignore excludes app/books (generated audio, manifests, covers)
 # because it is large and copyrighted, but that content IS the deployed site.
 # This file exists so deploys keep shipping it.
+# UPDATE 2026-08-27: media moved to Cloudflare R2 (see tools/publish_r2.py);
+# deploys are code-only now, so app/books is excluded after all.
 .venv-tts/
 .venv-piper/
 .piper-voices/
@@ -14,3 +16,4 @@ supabase/
 *.log
 .git/
 DESIGN.md
+app/books/

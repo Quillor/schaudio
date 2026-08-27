@@ -89,25 +89,28 @@ def verify(slug, n):
     return None
 
 def deploy(tag):
-    """At most one deploy at a time; never fatal."""
-    if not deploy_lock.acquire(blocking=False):
-        log(f"deploy skipped ({tag}) — one already running"); return
+    """Publish one chapter: incremental sync of app/books to R2. Replaces the
+    old per-chapter Vercel deploy (media no longer ships with the app; the
+    2026-08-27 quota exhaustion is why). Serialized: boto3 sessions are cheap
+    but overlapping syncs would double-upload the same new files."""
+    deploy_lock.acquire()
     try:
         t0 = time.time()
-        size = subprocess.run(["du", "-sh", str(ROOT / "app")], capture_output=True,
-                              text=True).stdout.split()[0]
-        r = subprocess.run(["npx", "-y", "vercel", "deploy", "--prod", "--yes"],
-                           cwd=ROOT, capture_output=True, text=True, timeout=3600)
-        ok = "ready" in (r.stdout + r.stderr).lower() and r.returncode == 0
-        state["deploys" if ok else "deploy_fail"] += 1
-        log(f"deploy {'OK' if ok else 'FAILED'} ({tag}) size={size} {time.time()-t0:.0f}s")
-        if not ok:
-            log("  " + (r.stderr or r.stdout)[-300:].replace("\n", " "))
+        r = subprocess.run([str(ROOT / ".venv-tts/bin/python"),
+                            str(ROOT / "tools/publish_r2.py"), "books"],
+                           cwd=ROOT, capture_output=True, text=True, timeout=1800)
+        if r.returncode == 0:
+            state["deploys"] += 1
+            log(f"publish OK ({tag}) -> R2 {r.stdout.strip().splitlines()[-1] if r.stdout.strip() else ''} {time.time()-t0:.0f}s")
+        else:
+            state["deploy_fail"] += 1
+            log(f"publish FAILED ({tag}): {(r.stderr or '')[-200:]}")
     except Exception as e:
         state["deploy_fail"] += 1
-        log(f"deploy EXCEPTION ({tag}): {e}")
+        log(f"publish FAILED ({tag}): {e}")
     finally:
         deploy_lock.release()
+
 
 def worker(items, name):
     for slug, n, _ in items:

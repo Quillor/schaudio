@@ -255,8 +255,8 @@ function renderHome() {
         <span class="sc-tile-bar"><span style="inline-size:${pct}%"></span></span>
       </span>
       <span class="sc-tile-title">${esc(book.title)}</span>
-      <span class="sc-tile-sub">${esc(book.author)} · ${book.chapters.length} chapters</span>`;
-    el.setAttribute("aria-label", `${book.title}, ${started} of ${book.chapters.length} chapters started`);
+      <span class="sc-tile-sub">${esc(book.author)} · ${book.chapters.filter((c) => !c.bib).length} chapters</span>`;
+    el.setAttribute("aria-label", `${book.title}, ${started} of ${book.chapters.filter((c) => !c.bib).length} chapters started`);
     el.addEventListener("click", () => openWithZoom(slug, el.querySelector(".sc-tile-cover")));
     grid.appendChild(el);
   }
