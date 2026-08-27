@@ -61,12 +61,16 @@ def release(slug, n, ok=True):
 def pending(voice="sam"):
     """Chapters with no usable narration yet, unclaimed, priority-ordered."""
     out = []
-    for slug in ("counseling", "research-methods", "lifespan"):
+    # Priority order is owner-set: The Life Span first (2026-08-27), then the
+    # remainder of counseling, then research-methods.
+    for slug in ("lifespan", "counseling", "research-methods"):
         bp = ROOT / f"app/books/{slug}/book.json"
         if not bp.exists():
             continue
         book = json.loads(bp.read_text())
         for c in book["chapters"]:
+            if c.get("bib"):
+                continue          # bibliographies are kept as text, not narrated
             mf = ROOT / f"app/books/{slug}/manifests/{voice}-ch{c['n']:02d}.json"
             ok = False
             if mf.exists():

@@ -453,7 +453,7 @@ function renderChapters() {
         : "Not started";
 
       el.innerHTML = `
-        <span class="sc-chapter-n">${finished && !active ? '<i class="fa-solid fa-check"></i>' : ch.n}</span>
+        <span class="sc-chapter-n">${finished && !active ? '<i class="fa-solid fa-check"></i>' : (ch.label || ch.n)}</span>
         <span class="sc-chapter-meta">
           <span class="sc-chapter-title">${esc(ch.title)}</span>
           <span class="sc-chapter-sub">${status}${estMs ? `${active ? "" : " · "}${fmt(estMs)}` : ""}</span>
@@ -463,7 +463,7 @@ function renderChapters() {
         <i class="fa-solid ${active ? "fa-volume-high" : "fa-play"}" aria-hidden="true"></i>`;
 
       el.setAttribute("aria-label",
-        `Chapter ${ch.n}, ${ch.title}, ${active ? "now playing" : finished ? "finished" : pos > 1000 ? pct + " percent listened" : "not started"}`);
+        `Chapter ${ch.label || ch.n}, ${ch.title}, ${active ? "now playing" : finished ? "finished" : pos > 1000 ? pct + " percent listened" : "not started"}`);
 
       el.addEventListener("click", () => {
         closeSheets();

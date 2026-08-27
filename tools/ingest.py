@@ -168,6 +168,30 @@ def to_paragraphs(raw):
     return paras
 
 
+# A chapter's trailing References section is real text but useless narration:
+# hours of "Erikson, E. H. (1963)." read aloud. Split it into its own entry so
+# the app can present "Chapter N-A: Bibliography" and users can skip it whole.
+REF_LIKE = re.compile(r"\(\d{4}[a-z]?\)\.|\b[A-Z][A-Za-z'-]+,\s+[A-Z]\.(\s*[A-Z]\.)*")
+
+
+def _is_ref(p):
+    hits = len(REF_LIKE.findall(p))
+    return hits >= 2 or (hits >= 1 and len(p.split()) < 22)
+
+
+def split_bib(paras, min_tail=8):
+    """Split (body, bibliography). The bibliography is the tail run that opens
+    with four straight reference-shaped paragraphs and stays >=70% reference-
+    shaped to the end; shorter tails stay in the body (in-text citations are
+    dense in places, and a false split would silence real prose)."""
+    flags = [_is_ref(x) for x in paras]
+    for i in range(len(paras)):
+        tail = flags[i:]
+        if len(tail) >= min_tail and all(tail[:4]) and sum(tail) / len(tail) >= 0.7:
+            return paras[:i], paras[i:]
+    return paras, []
+
+
 def chapter_spans(reader, chapter_re):
     """[(title, start_page, end_page)] from the PDF's top-level outline."""
     entries = []

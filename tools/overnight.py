@@ -42,11 +42,25 @@ def ingest_full(slug, n):
         title, a, b = spans[n - 1]
         raw = "\n\n".join(ing.clean_page(r.pages[j].extract_text() or "")
                           for j in range(a, min(b, len(r.pages))))
-        paras = ing.to_paragraphs(raw)
-        words = sum(len(p.split()) for p in paras)
+        body, bib = ing.split_bib(ing.to_paragraphs(raw))
+        words = sum(len(p.split()) for p in body)
         ch = next(c for c in data["chapters"] if c["n"] == n)
-        ch.update({"title": title, "paragraphs": paras, "words": words,
+        ch.update({"title": title, "paragraphs": body, "words": words,
                    "fullWords": words, "excerpt": False})
+        # Bibliography rides along as its own skippable entry, n = 100 + parent
+        # (unique for filenames, sorts after every real chapter; the label is
+        # what the UI shows). Never narrated — see claim.pending().
+        bn = 100 + n
+        prev = next((c for c in data["chapters"] if c["n"] == bn), None)
+        if bib:
+            bw = sum(len(p.split()) for p in bib)
+            entry = {"n": bn, "label": f"{n}-A", "bib": True,
+                     "title": f"Chapter {n}-A: Bibliography",
+                     "paragraphs": bib, "words": bw, "fullWords": bw, "excerpt": False}
+            if prev: prev.update(entry)
+            else: data["chapters"].insert(data["chapters"].index(ch) + 1, entry)
+        elif prev:
+            data["chapters"].remove(prev)
         json.dump(data, open(path, "w"), indent=1)
     # narrate.py skips a chapter that already has a manifest, so the stale
     # excerpt audio must go or the chapter silently keeps its old 2-paragraph
@@ -56,7 +70,7 @@ def ingest_full(slug, n):
         mf = ROOT / f"app/books/{slug}/manifests/{v}-ch{n:02d}.json"
         if mf.exists(): mf.unlink()
         shutil.rmtree(ROOT / f"app/books/{slug}/audio/{v}/ch{n:02d}", ignore_errors=True)
-    return len(paras), words
+    return len(body), words
 
 def verify(slug, n):
     base = ROOT / f"app/books/{slug}"
@@ -125,11 +139,13 @@ def worker(items, name):
 
 def main():
     q = queue()
-    log(f"=== overnight run: {len(q)} chapters, {sum(w for _,_,w in q):,} words ===")
-    # Split alternately so both streams finish the priority book at a similar time.
-    a, b = q[0::2], q[1::2]
-    ts = [threading.Thread(target=worker, args=(a, "A"), daemon=False),
-          threading.Thread(target=worker, args=(b, "B"), daemon=False)]
+    nw = int(os.environ.get("WORKERS", "2"))
+    log(f"=== overnight run: {len(q)} chapters, {sum(w for _,_,w in q):,} words, {nw} workers ===")
+    # Deal chapters round-robin so all streams finish the priority book together.
+    lanes = [q[i::nw] for i in range(nw)]
+    names = [chr(ord("A") + i) for i in range(nw)]
+    ts = [threading.Thread(target=worker, args=(lane, nm), daemon=False)
+          for lane, nm in zip(lanes, names)]
     for t in ts: t.start()
     for t in ts: t.join()
     deploy("final")
