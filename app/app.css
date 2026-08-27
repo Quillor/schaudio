@@ -1193,3 +1193,28 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
     margin-inline-end: calc(-1 * var(--space-2)); /* bleed into edge padding */
   }
 }
+
+/* ---- Book FM warm theme ----------------------------------------------------
+   Brand exception to the "semantic tokens only, no raw hex" rule: this block
+   IS the token layer for Book FM's light theme. Components still consume only
+   semantic tokens; we re-base them to the cream/brown of the leather-book
+   icon and the landing page. Dark mode keeps Flavor's palette. */
+:root[data-mode="light"][data-hue][data-sat][data-bg] {
+  --surface-1: #faf6ee;          /* page: light cream */
+  --surface-2: #f3ecdf;
+  --surface-3: #ebe1cf;
+  --text-primary: #33261a;       /* dark brown */
+  --text-secondary: #5c4a38;
+  --text-tertiary: #8d7962;
+  --border-subtle: #e7dcc8;
+  --border-default: #d6c8ae;
+  --accent-bg: #8b3d2a;          /* leather red-brown */
+  --accent-bg-hover: #9c4630;
+  --accent-bg-active: #7a3524;
+  --accent-fg: #fff8ef;
+  --accent-text: #7a3322;
+  --accent-subtle: #f3e0d6;
+  --focus-ring: #b06a4f;
+  --surface-page: #f6f0e4;       /* body behind cards; slightly deeper cream */
+  --surface-sunken: #efe7d7;
+}

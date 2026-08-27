@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book FM — listen to books, word by word</title>
+<meta name="description" content="Book FM is a personal audiobook reader that narrates your books and highlights each word as it is spoken. Tap any word to jump the audio there.">
+<link rel="icon" type="image/png" sizes="192x192" href="/app/brand/icon-192.png">
+<link rel="apple-touch-icon" href="/app/brand/apple-touch-icon.png">
+<style>
+  :root { color-scheme: light dark; }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    font: 17px/1.6 "Libre Franklin", -apple-system, system-ui, sans-serif;
+    color: #2b2622; background: #faf7f2;
+    display: grid; min-height: 100svh; place-items: center; padding: 24px;
+  }
+  @media (prefers-color-scheme: dark) { body { color: #ece5dc; background: #191512; } }
+  main { max-width: 640px; text-align: center; }
+  img.mark { width: 128px; height: 128px; border-radius: 28px; box-shadow: 0 12px 40px rgb(0 0 0 / .25); }
+  h1 { font-family: Fraunces, Georgia, serif; font-size: 44px; margin: 24px 0 8px; }
+  p.tag { font-size: 20px; opacity: .85; }
+  p.body { margin: 20px auto 0; max-width: 52ch; opacity: .75; }
+  a.cta {
+    display: inline-block; margin-top: 32px; padding: 14px 36px;
+    background: #8b3d2a; color: #fff; text-decoration: none;
+    border-radius: 999px; font-weight: 600; font-size: 18px;
+  }
+  a.cta:hover { background: #a04a34; }
+  footer { margin-top: 48px; font-size: 14px; opacity: .6; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <img class="mark" src="/app/brand/icon-512.png" alt="Book FM icon: a leather-bound book with a play button">
+  <h1>Book FM</h1>
+  <p class="tag">Listen to books, word by word.</p>
+  <p class="body">Book FM is a personal audiobook reader. It narrates your books aloud and lights up
+  each word as it is spoken, so your eyes and ears stay in the same place. Tap any word to jump the
+  narration there. Highlight passages, take notes, set bookmarks — and your progress follows you
+  across devices when you sign in.</p>
+  <a class="cta" href="/app/">Open Book FM</a>
+  <footer><a href="/app/privacy.html">Privacy Policy</a> · <a href="/app/terms.html">Terms of Service</a></footer>
+</main>
+</body>
+</html>
