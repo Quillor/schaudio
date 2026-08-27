@@ -1156,3 +1156,40 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
 @media (min-width: 1200px) {
   .sc-desk-chapters .sc-chapter { min-block-size: 58px; }
 }
+
+/* ---- mobile tap targets (bottom bar) ----
+   Apple/Android HIG floor is 44px; the collapsed bar's chevron was 34x30 and
+   the scrubber's touch strip ~30px. Every interactive element in the bar now
+   presents at least 44px of hit area without growing the visuals much. */
+@media (max-width: 1023px) {
+  .sc-transport button { touch-action: manipulation; }
+  .sc-scrub { touch-action: none; }               /* no scroll-vs-scrub fights */
+
+  /* floating chevron above the expanded bar */
+  .sc-min-toggle { inline-size: 48px; block-size: 38px; }
+
+  /* collapsed: one comfortable row */
+  body[data-transport="min"] .sc-transport {
+    min-block-size: 64px;
+    column-gap: var(--space-3);
+    padding-inline: var(--space-4);
+    cursor: pointer;                              /* whole strip expands */
+  }
+  body[data-transport="min"] #playPause {
+    inline-size: 48px; block-size: 48px;
+  }
+  body[data-transport="min"] #playPause i { font-size: 18px; }
+  body[data-transport="min"] .sc-scrub {
+    padding-block: 18px;                          /* 8px track + 36px = 44px strip */
+    margin-block: calc(-1 * var(--space-2));      /* without fattening the bar */
+  }
+  body[data-transport="min"] .sc-scrub-head { inline-size: 22px; block-size: 22px; }
+  body[data-transport="min"] #timeNow {
+    min-block-size: 44px;
+    display: grid; align-items: center;
+  }
+  body[data-transport="min"] .sc-min-toggle {
+    inline-size: 44px; block-size: 44px;
+    margin-inline-end: calc(-1 * var(--space-2)); /* bleed into edge padding */
+  }
+}

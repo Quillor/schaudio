@@ -1254,6 +1254,15 @@ function wireEvents() {
     save();
     applyTransportMode();
   });
+  // Collapsed bar: the whole strip is a tap target for "expand" — thumbs miss
+  // a 34px chevron. Real controls (play, scrubber) keep their own behavior.
+  $("transport").addEventListener("click", (e) => {
+    if (!store.transportMin) return;
+    if (e.target.closest("button, .sc-scrub, input, a")) return;
+    store.transportMin = false;
+    save();
+    applyTransportMode();
+  });
   $("continueBtn").addEventListener("click", () => openWithZoom(store.lastBook, $("continueCover"), { autoplay: true }));
 
   // transport

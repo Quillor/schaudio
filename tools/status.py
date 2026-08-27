@@ -9,6 +9,8 @@ VOICE = sys.argv[1] if len(sys.argv) > 1 else "sam"
 def chapter_rows(book_dir):
     book = json.loads((book_dir / "book.json").read_text())
     for c in book["chapters"]:
+        if c.get("bib"):
+            continue                     # text-only bibliography, never narrated
         words = len(" ".join(c["paragraphs"]).split())
         made = len(list((book_dir / "audio" / VOICE / f"ch{c['n']:02d}").glob("*.mp3")))
         yield {
