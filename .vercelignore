@@ -1,5 +1,15 @@
-.venv-tts
-tools
-supabase
-DESIGN.md
+# Vercel CLI falls back to .gitignore when this file is absent. That would be
+# wrong here: .gitignore excludes app/books (generated audio, manifests, covers)
+# because it is large and copyrighted, but that content IS the deployed site.
+# This file exists so deploys keep shipping it.
+.venv-tts/
+.venv-piper/
+.piper-voices/
+node_modules/
+ios/
+tools/
+run/
 *.pdf
+*.log
+.git/
+DESIGN.md
