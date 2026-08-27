@@ -9,6 +9,7 @@ node_modules/
 ios/
 tools/
 run/
+supabase/
 *.pdf
 *.log
 .git/
