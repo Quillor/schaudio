@@ -30,6 +30,11 @@ let activeTab = "notes";
 let userScrolledAt = 0;
 let lastWordKey = "";
 
+// Media (book text, manifests, audio, covers) can live on a separate host
+// (Cloudflare R2) so code deploys stay small. Empty base = same-origin (dev).
+const MEDIA_BASE = (window.SCHAUDIO && window.SCHAUDIO.mediaBase || "").replace(/\/$/, "");
+const mediaUrl = (path) => MEDIA_BASE ? `${MEDIA_BASE}/${path}` : path;
+
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
 
@@ -125,7 +130,7 @@ function alignTokens(text, words) {
   initAuth();
 
   for (const slug of SLUGS) {
-    const book = await fetch(`books/${slug}/book.json`, { cache: "no-cache" }).then((r) => r.json());
+    const book = await fetch(mediaUrl(`books/${slug}/book.json`), { cache: "no-cache" }).then((r) => r.json());
     books.set(slug, { book, manifest: null, manifests: {} });
   }
   renderHome();
@@ -194,7 +199,7 @@ function playZoom(src, a, b, { fadeBackdrop, fadeImgIn, onDone }) {
 function openWithZoom(slug, coverEl, opts = {}) {
   if (REDUCE_MOTION.matches || !coverEl) return showReader(slug, opts);
   const from = coverRect(coverEl);
-  playZoom(`books/${slug}/cover.png`, from, zoomTarget(from), {
+  playZoom(mediaUrl(`books/${slug}/cover.png`), from, zoomTarget(from), {
     fadeBackdrop: "in",
     onDone: () => showReader(slug, opts),
   });
@@ -209,7 +214,7 @@ function closeWithZoom() {
   const tile = [...document.querySelectorAll(".sc-tile-cover")].find((img) => img.src.includes(`/${slug}/`));
   if (!tile) return;
   const to = coverRect(tile);
-  playZoom(`books/${slug}/cover.png`, zoomTarget(to), to, { fadeBackdrop: "out", fadeImgIn: true });
+  playZoom(mediaUrl(`books/${slug}/cover.png`), zoomTarget(to), to, { fadeBackdrop: "out", fadeImgIn: true });
 }
 
 /* ---------------- home ---------------- */
@@ -222,7 +227,7 @@ function renderHome() {
   if (last && last.manifest && lastCh?.positionMs > 1000) {
     const st = lastCh;
     const pct = Math.min(100, Math.round((st.positionMs / last.manifest.totalMs) * 100));
-    $("continueCover").src = `books/${store.lastBook}/cover.png`;
+    $("continueCover").src = mediaUrl(`books/${store.lastBook}/cover.png`);
     $("continueCover").alt = "";
     $("continueTitle").textContent = last.book.title;
     const chTitle = last.book.chapters.find((c) => c.n === bookState(store.lastBook).chapter)?.title || "";
@@ -246,7 +251,7 @@ function renderHome() {
     el.className = "sc-tile";
     el.innerHTML = `
       <span class="sc-tile-coverwrap">
-        <img class="sc-tile-cover" src="books/${slug}/cover.png" alt="">
+        <img class="sc-tile-cover" src="${mediaUrl(`books/${slug}/cover.png`)}" alt="">
         <span class="sc-tile-bar"><span style="inline-size:${pct}%"></span></span>
       </span>
       <span class="sc-tile-title">${esc(book.title)}</span>
@@ -283,7 +288,7 @@ async function openBook(slug, { autoplay = false, chapter = null } = {}) {
 
   $("bookTitle").textContent = entry.book.title;
   $("bookChapter").textContent = ch.title;
-  $("deskCover").src = `books/${slug}/cover.png`;
+  $("deskCover").src = mediaUrl(`books/${slug}/cover.png`);
   $("deskChapter").textContent = ch.title;
 
   lastWordKey = "";
@@ -363,7 +368,7 @@ async function getManifest(slug, voiceId, chapterN) {
   const key = `${voiceId}-${chapterN}`;
   if (!(key in entry.manifests)) {
     const file = `manifests/${voiceId}-ch${String(chapterN).padStart(2, "0")}.json`;
-    const m = await fetch(`books/${slug}/${file}`, { cache: "no-cache" })
+    const m = await fetch(mediaUrl(`books/${slug}/${file}`), { cache: "no-cache" })
       .then((r) => (r.ok ? r.json() : null)).catch(() => null);
     const ch = entry.book.chapters.find((c) => c.n === chapterN);
     if (m && ch) m.paragraphs.forEach((p, i) => { p.tokens = alignTokens(ch.paragraphs[i], p.words); });
@@ -487,7 +492,7 @@ function updateMediaMetadata() {
     title: ch.title,
     artist: book.author,
     album: book.title,
-    artwork: [{ src: new URL(`books/${current}/cover.png`, location.href).href, sizes: "480x615", type: "image/png" }],
+    artwork: [{ src: new URL(mediaUrl(`books/${current}/cover.png`), location.href).href, sizes: "480x615", type: "image/png" }],
   });
 }
 
@@ -566,7 +571,7 @@ function seekTo(ms, { autoplay = playing, scroll = "instant" } = {}) {
   const local = (ms - m.paragraphs[p].startMs) / 1000;
   if (paraIdx !== p || !audio.src.endsWith(m.paragraphs[p].audio)) {
     paraIdx = p;
-    audio.src = `books/${current}/${m.paragraphs[p].audio}`;
+    audio.src = mediaUrl(`books/${current}/${m.paragraphs[p].audio}`);
   }
   audio.currentTime = Math.max(0, local);
   syncUI(ms, scroll);
