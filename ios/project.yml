@@ -26,14 +26,14 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Schaudio
+        INFOPLIST_KEY_CFBundleDisplayName: Book FM
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1,2"
     info:
       path: Schaudio/Info.plist
       properties:
-        CFBundleDisplayName: Schaudio
+        CFBundleDisplayName: Book FM
         UILaunchScreen: {}
         # Google requires iOS OAuth clients to redirect to the reversed client id.
         CFBundleURLTypes:
