@@ -1,0 +1,391 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0BEDBF7C644BDFCCAF54BD2A /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69D18F6D1BEF6CE9EF2287D /* Models.swift */; };
+		1B6A85D0C1E962B89113759F /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693154A35F28F2A427BBF7E4 /* Library.swift */; };
+		2862B9AC1A2A062FE1749DBC /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA21FEE64EA125788A4F00D /* AccountView.swift */; };
+		32E8E4C38C1245FB8E0FF89A /* SchaudioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6229B6D410DA284C88A1DE11 /* SchaudioApp.swift */; };
+		3BD7070F1302E2FD580F26CF /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D74037CFCC5B5052295198 /* Store.swift */; };
+		44A4284451065F73CFB26499 /* Downloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E702B73D2CD180E62EDE94C /* Downloads.swift */; };
+		4E2082D4B96E44C55275B2D7 /* SyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F127C575A502F48BD7E3F2C /* SyncService.swift */; };
+		5336CBCD12AAC3A6AAE9D75B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6A664C228B9E36FB78143E29 /* Assets.xcassets */; };
+		801533B8FBA5050025AB3660 /* PlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4F3BBD7ECDF0A40A416A13 /* PlayerBar.swift */; };
+		8647FC1C7C056B2E222D0581 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91CE5D0306B245864D7F7229 /* LibraryView.swift */; };
+		BA0190A0AC271633DDA0FC26 /* GoogleSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B1CB4574BEBFDFC60703773 /* GoogleSignIn.swift */; };
+		C3108E7DB64D2ADA37B648FE /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D393DFC427148FBBFC65975 /* Player.swift */; };
+		C8B62BBB6E232EEF9610796A /* SyncPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FD41B39FE729D84CB59E6CE /* SyncPayload.swift */; };
+		D611320244C0F847867DEC08 /* WrappingText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFB7710207CF53177990CAF0 /* WrappingText.swift */; };
+		DD9E84E0D131D605E931D624 /* Sheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57471350F40ECFC822EFF75 /* Sheets.swift */; };
+		DEA7261F9DC621AA72C02026 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001D9BBBC21CCB9B26B2AB6A /* ReaderView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		001D9BBBC21CCB9B26B2AB6A /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
+		06DBF1E38A25F22B3EDAAE0B /* Schaudio.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Schaudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AA21FEE64EA125788A4F00D /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
+		1B1CB4574BEBFDFC60703773 /* GoogleSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignIn.swift; sourceTree = "<group>"; };
+		1E702B73D2CD180E62EDE94C /* Downloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Downloads.swift; sourceTree = "<group>"; };
+		2F127C575A502F48BD7E3F2C /* SyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncService.swift; sourceTree = "<group>"; };
+		4F4F3BBD7ECDF0A40A416A13 /* PlayerBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerBar.swift; sourceTree = "<group>"; };
+		5FD41B39FE729D84CB59E6CE /* SyncPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPayload.swift; sourceTree = "<group>"; };
+		6229B6D410DA284C88A1DE11 /* SchaudioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchaudioApp.swift; sourceTree = "<group>"; };
+		693154A35F28F2A427BBF7E4 /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
+		6A664C228B9E36FB78143E29 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8D393DFC427148FBBFC65975 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
+		91CE5D0306B245864D7F7229 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		B69D18F6D1BEF6CE9EF2287D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		C4D74037CFCC5B5052295198 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
+		CFB7710207CF53177990CAF0 /* WrappingText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrappingText.swift; sourceTree = "<group>"; };
+		D57471350F40ECFC822EFF75 /* Sheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sheets.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		219B218E2EF4496D7A1834A3 /* Schaudio */ = {
+			isa = PBXGroup;
+			children = (
+				A256D5B52928FCE283487F23 /* Resources */,
+				2954D37E34A50E3ED6D42B5A /* Sources */,
+			);
+			path = Schaudio;
+			sourceTree = "<group>";
+		};
+		2954D37E34A50E3ED6D42B5A /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				1AA21FEE64EA125788A4F00D /* AccountView.swift */,
+				1E702B73D2CD180E62EDE94C /* Downloads.swift */,
+				1B1CB4574BEBFDFC60703773 /* GoogleSignIn.swift */,
+				693154A35F28F2A427BBF7E4 /* Library.swift */,
+				91CE5D0306B245864D7F7229 /* LibraryView.swift */,
+				B69D18F6D1BEF6CE9EF2287D /* Models.swift */,
+				8D393DFC427148FBBFC65975 /* Player.swift */,
+				4F4F3BBD7ECDF0A40A416A13 /* PlayerBar.swift */,
+				001D9BBBC21CCB9B26B2AB6A /* ReaderView.swift */,
+				6229B6D410DA284C88A1DE11 /* SchaudioApp.swift */,
+				D57471350F40ECFC822EFF75 /* Sheets.swift */,
+				C4D74037CFCC5B5052295198 /* Store.swift */,
+				5FD41B39FE729D84CB59E6CE /* SyncPayload.swift */,
+				2F127C575A502F48BD7E3F2C /* SyncService.swift */,
+				CFB7710207CF53177990CAF0 /* WrappingText.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		8540C08574F7B0690927143C = {
+			isa = PBXGroup;
+			children = (
+				219B218E2EF4496D7A1834A3 /* Schaudio */,
+				914E3D81DF88336344E679D6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		914E3D81DF88336344E679D6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				06DBF1E38A25F22B3EDAAE0B /* Schaudio.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A256D5B52928FCE283487F23 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				6A664C228B9E36FB78143E29 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E0925997CC4CA68CD95C6927 /* Schaudio */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B2605D5ECF8DF06761F1D9B /* Build configuration list for PBXNativeTarget "Schaudio" */;
+			buildPhases = (
+				99E118D37A9E85438DAA8F84 /* Sources */,
+				7E31B16710B47FA3C74E7025 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Schaudio;
+			packageProductDependencies = (
+			);
+			productName = Schaudio;
+			productReference = 06DBF1E38A25F22B3EDAAE0B /* Schaudio.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9C056167F69A4A3B92DF512B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					E0925997CC4CA68CD95C6927 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 0594BB19783310A490F4611A /* Build configuration list for PBXProject "Schaudio" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 8540C08574F7B0690927143C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 914E3D81DF88336344E679D6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E0925997CC4CA68CD95C6927 /* Schaudio */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7E31B16710B47FA3C74E7025 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5336CBCD12AAC3A6AAE9D75B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		99E118D37A9E85438DAA8F84 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2862B9AC1A2A062FE1749DBC /* AccountView.swift in Sources */,
+				44A4284451065F73CFB26499 /* Downloads.swift in Sources */,
+				BA0190A0AC271633DDA0FC26 /* GoogleSignIn.swift in Sources */,
+				1B6A85D0C1E962B89113759F /* Library.swift in Sources */,
+				8647FC1C7C056B2E222D0581 /* LibraryView.swift in Sources */,
+				0BEDBF7C644BDFCCAF54BD2A /* Models.swift in Sources */,
+				C3108E7DB64D2ADA37B648FE /* Player.swift in Sources */,
+				801533B8FBA5050025AB3660 /* PlayerBar.swift in Sources */,
+				DEA7261F9DC621AA72C02026 /* ReaderView.swift in Sources */,
+				32E8E4C38C1245FB8E0FF89A /* SchaudioApp.swift in Sources */,
+				DD9E84E0D131D605E931D624 /* Sheets.swift in Sources */,
+				3BD7070F1302E2FD580F26CF /* Store.swift in Sources */,
+				C8B62BBB6E232EEF9610796A /* SyncPayload.swift in Sources */,
+				4E2082D4B96E44C55275B2D7 /* SyncService.swift in Sources */,
+				D611320244C0F847867DEC08 /* WrappingText.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8644D6EE820C8CCFA7B17559 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = Schaudio/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Schaudio;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quillor.schaudio;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A6CDC28E58107B3683E4EC24 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		C7709E4B2644B90A4228411E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		D239EFCFB36ED7019E6FA215 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = Schaudio/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Schaudio;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.quillor.schaudio;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0594BB19783310A490F4611A /* Build configuration list for PBXProject "Schaudio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C7709E4B2644B90A4228411E /* Debug */,
+				A6CDC28E58107B3683E4EC24 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8B2605D5ECF8DF06761F1D9B /* Build configuration list for PBXNativeTarget "Schaudio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D239EFCFB36ED7019E6FA215 /* Debug */,
+				8644D6EE820C8CCFA7B17559 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9C056167F69A4A3B92DF512B /* Project object */;
+}

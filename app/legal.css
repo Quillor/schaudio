@@ -1,0 +1,38 @@
+/* Legal pages — reading-first layout on Flavor DS semantic tokens. */
+
+.sc-legal-body { overflow: auto; display: block; }
+.sc-legal-body .sc-appbar { position: sticky; inset-block-start: 0; z-index: 2; }
+.sc-legal-body .sc-brand { text-decoration: none; color: inherit; }
+
+.sc-legal {
+  max-inline-size: 46rem;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-5) var(--space-12);
+  font-family: var(--font-text);
+  font-size: var(--font-size-4);
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+.sc-legal h1 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-8);
+  line-height: 1.15;
+  margin: 0 0 var(--space-2);
+}
+.sc-legal h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-5);
+  margin: var(--space-7) 0 var(--space-2);
+}
+.sc-legal p { margin: 0 0 var(--space-4); }
+.sc-legal ul { margin: 0 0 var(--space-4); padding-inline-start: var(--space-5); }
+.sc-legal li { margin-block-end: var(--space-2); }
+.sc-legal a { color: var(--text-accent); }
+.sc-legal-date { color: var(--text-tertiary); font-size: var(--font-size-2); margin-block-end: var(--space-6); }
+.sc-legal-foot {
+  margin-block-start: var(--space-8);
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--border-subtle);
+  font-size: var(--font-size-2);
+  color: var(--text-tertiary);
+}

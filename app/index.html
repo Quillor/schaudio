@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en" data-hue="brand" data-sat="regular" data-mode="light" data-contrast="aa"
+      data-bg="primary" data-radius="rounded" data-density="regular" data-font="editorial" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schaudio</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="brand/logo.svg">
+<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#236bbf">
+<meta name="description" content="Listen to your books while you read along — word-for-word synced audio, highlights and notes.">
+<link rel="stylesheet" href="../vendor/flavor/flavor.css">
+<link rel="stylesheet" href="../vendor/flavor/components.css">
+<link rel="stylesheet" href="../vendor/fontawesome/css/fontawesome.min.css">
+<link rel="stylesheet" href="../vendor/fontawesome/css/regular.min.css">
+<link rel="stylesheet" href="../vendor/fontawesome/css/solid.min.css">
+<link rel="stylesheet" href="../vendor/fontawesome/css/light.min.css">
+<link rel="stylesheet" href="../vendor/fontawesome/css/brands.min.css">
+<link rel="stylesheet" href="app.css?v=97c9b2a9f7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<script>
+  // Deployment config. Auth + sync are OFF in dev (localhost).
+  // For the deployed site, create a Supabase project, run supabase/schema.sql,
+  // enable the Google provider, and paste the project's URL + anon key here.
+  window.SCHAUDIO = {
+    supabaseUrl: "https://dntyenrksitgfichghca.supabase.co",
+    // Publishable key: safe in the browser by design — row-level security
+    // in supabase/schema.sql is the actual access boundary.
+    supabaseAnonKey: "sb_publishable_OlbdMOaYHDs5mrbDFFAmwA_PsVAq4UL",
+    // Google OAuth client (public by design). Enables the ID-token sign-in
+    // flow, which shows "Schaudio" on Google's consent screen instead of the
+    // Supabase callback host.
+    googleClientId: "929848887321-a4j7v58djbpe4mvjfm4a0u7fm6hl805a.apps.googleusercontent.com",
+  };
+</script>
+</head>
+<body class="fds-app" data-view="home">
+
+<!-- ================= HOME ================= -->
+<div class="sc-home" id="viewHome">
+  <header class="sc-appbar">
+    <span class="sc-brand">
+      <img class="sc-brand-mark" src="brand/logo.svg" alt="" width="28" height="28">
+      Schaudio
+    </span>
+    <span class="sc-appbar-spacer"></span>
+    <button class="fds-button" data-variant="ghost" id="themeToggle" aria-label="Switch to dark mode">
+      <i id="themeIcon" class="fa-regular fa-moon" aria-hidden="true"></i>
+    </button>
+    <span id="authSlot"></span>
+  </header>
+
+  <main class="sc-home-main">
+    <section id="continueCard" hidden>
+      <h2 class="sc-home-heading">Continue listening</h2>
+      <button class="sc-continue" id="continueBtn">
+        <img class="sc-continue-cover" id="continueCover" alt="">
+        <span class="sc-continue-meta">
+          <span class="sc-continue-title" id="continueTitle"></span>
+          <span class="sc-continue-sub" id="continueSub"></span>
+          <span class="fds-progress" role="progressbar" id="continueBar" aria-valuemin="0" aria-valuemax="100">
+            <span class="fds-progress-bar" id="continueBarFill"></span>
+          </span>
+        </span>
+        <span class="sc-continue-play" aria-hidden="true">
+          <i class="fa-solid fa-play"></i>
+        </span>
+      </button>
+    </section>
+
+    <h2 class="sc-home-heading">Your library</h2>
+    <div class="sc-grid" id="bookGrid"></div>
+  </main>
+</div>
+
+<!-- ================= READER ================= -->
+<div class="sc-reader" id="viewReader" hidden>
+  <header class="sc-appbar">
+    <span class="sc-reader-head">
+      <span class="sc-reader-title" id="bookTitle"></span>
+      <span class="sc-reader-chapter" id="bookChapter"></span>
+    </span>
+    <span class="sc-appbar-spacer"></span>
+    <button class="fds-button sc-close" data-variant="ghost" id="closeReader" aria-label="Close book">
+      <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+    </button>
+  </header>
+
+  <div class="sc-reader-body">
+    <!-- desktop left column: book identity + chapters -->
+    <aside class="sc-desk-col sc-desk-left" aria-label="Book and chapters">
+      <img class="sc-desk-cover" id="deskCover" alt="">
+      <p class="sc-desk-chapter" id="deskChapter"></p>
+      <h2 class="sc-desk-heading">Chapters</h2>
+      <div class="sc-chapters-host sc-desk-chapters"></div>
+    </aside>
+
+    <main class="sc-page-wrap">
+      <article class="sc-page" id="page" aria-label="Book text"></article>
+    </main>
+
+    <!-- desktop right column: notes -->
+    <aside class="sc-desk-col sc-desk-right" aria-label="Notes and highlights">
+      <h2 class="sc-desk-heading">Notes &amp; highlights</h2>
+      <div class="sc-notes-host sc-notes"></div>
+    </aside>
+  </div>
+
+  <!-- transport -->
+  <footer class="sc-transport" id="transport" aria-label="Player">
+    <div class="sc-scrub-row">
+      <div class="sc-scrub" id="scrub" role="slider" tabindex="0" aria-label="Position"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="sc-scrub-track">
+          <div class="sc-scrub-played" id="scrubPlayed"></div>
+          <div class="sc-scrub-head" id="scrubHead"></div>
+          <div id="scrubMarks"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sc-times"><span id="timeNow">0:00</span><span class="sc-progress-note" id="progressBadge"></span><span id="timeTotal">0:00</span><button class="sc-min-toggle" id="minToggle" aria-label="Minimize player" aria-expanded="true">
+      <i id="minIcon" class="fa-regular fa-chevron-down" aria-hidden="true"></i>
+    </button></div>
+    <div class="sc-controls">
+      <button class="fds-button" data-variant="ghost" id="speed" aria-label="Playback speed">1.0×</button>
+      <button class="fds-button sc-skip" data-variant="ghost" id="skipBack" aria-label="Back 15 seconds">
+        <i class="fa-regular fa-rotate-left" aria-hidden="true"></i><span class="sc-skip-n">15</span>
+      </button>
+      <button class="sc-play" id="playPause" aria-label="Play">
+        <i id="playIcon" class="fa-solid fa-play" aria-hidden="true"></i>
+      </button>
+      <button class="fds-button sc-skip" data-variant="ghost" id="skipFwd" aria-label="Forward 15 seconds">
+        <span class="sc-skip-n">15</span><i class="fa-regular fa-rotate-right" aria-hidden="true"></i>
+      </button>
+      <button class="fds-button" data-variant="ghost" id="addBookmark" aria-label="Add bookmark">
+        <i class="fa-regular fa-bookmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="sc-menu-row">
+      <button class="sc-menu-btn" id="textBtn" aria-label="Text settings" aria-expanded="false">
+        <span class="sc-aa">Aa</span>
+      </button>
+      <button class="sc-menu-btn" id="voiceBtn" aria-label="Voice" aria-expanded="false">
+        <i class="fa-regular fa-microphone" aria-hidden="true"></i>
+      </button>
+      <button class="sc-menu-btn" id="chaptersBtn" aria-expanded="false">
+        <i class="fa-regular fa-list" aria-hidden="true"></i>
+        <span class="sc-menu-label">Chapters</span>
+      </button>
+      <button class="sc-menu-btn" id="appearanceBtn" aria-label="Appearance" aria-expanded="false">
+        <i id="themeIcon2" class="fa-regular fa-moon" aria-hidden="true"></i>
+      </button>
+      <button class="sc-menu-btn" id="notesBtn" aria-expanded="false">
+        <span class="sc-icon-badged">
+          <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+          <span class="sc-count-dot" id="noteCount">0</span>
+        </span>
+        <span class="sc-menu-label">Notes</span>
+      </button>
+    </div>
+  </footer>
+</div>
+
+<!-- scrim behind sheets/modals -->
+<div class="sc-scrim" id="scrim" hidden></div>
+
+<!-- notes sheet -->
+<aside class="sc-panel sc-sheet" id="panel" aria-label="Notes, bookmarks and categories" hidden>
+  <div class="sc-sheet-handle" aria-hidden="true"><span></span></div>
+  <div class="sc-panel-tabs" role="tablist">
+    <button class="sc-panel-tab" role="tab" data-tab="notes" aria-selected="true">Notes</button>
+    <button class="sc-panel-tab" role="tab" data-tab="bookmarks" aria-selected="false">Bookmarks</button>
+    <button class="sc-panel-tab" role="tab" data-tab="categories" aria-selected="false">Categories</button>
+    <button class="sc-panel-close" id="panelClose" aria-label="Close panel">
+      <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="sc-panel-body">
+    <div id="tab-notes" role="tabpanel"><div class="sc-notes-host sc-notes"></div></div>
+    <div id="tab-bookmarks" role="tabpanel" hidden><div id="bookmarkList" class="sc-bookmarks"></div></div>
+    <div id="tab-categories" role="tabpanel" hidden>
+      <div id="categoryList" class="sc-cats"></div>
+      <button class="fds-button" data-variant="secondary" id="addCategory">
+        <i class="fa-regular fa-plus" aria-hidden="true"></i>
+        New category
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- text sheet -->
+<div class="sc-sheet" id="textSheet" role="dialog" aria-label="Text settings" hidden>
+  <div class="sc-sheet-handle" aria-hidden="true"><span></span></div>
+  <div class="sc-sheet-head">
+    <h3 class="sc-sheet-title">Text</h3>
+    <button class="sc-panel-close" data-close-sheet aria-label="Close">
+      <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="sc-sheet-body">
+    <div class="sc-fontpop-row">
+      <span class="sc-fontpop-label">Size</span>
+      <button class="fds-button" data-variant="outline" id="sizeDown" aria-label="Decrease text size">A−</button>
+      <button class="fds-button" data-variant="outline" id="sizeUp" aria-label="Increase text size">A+</button>
+    </div>
+    <div class="sc-fontpop-row">
+      <span class="sc-fontpop-label">Font</span>
+      <button class="fds-button" data-variant="outline" id="styleSerif" aria-pressed="true">Serif</button>
+      <button class="fds-button" data-variant="outline" id="styleSans" aria-pressed="false">Sans</button>
+      <button class="fds-button" data-variant="outline" id="styleLegible" aria-pressed="false">Hyperlegible</button>
+    </div>
+    <div class="sc-fontpop-row">
+      <span class="sc-fontpop-label">Spacing</span>
+      <button class="fds-button" data-variant="outline" id="spaceRegular" aria-pressed="true">Regular</button>
+      <button class="fds-button" data-variant="outline" id="spaceRelaxed" aria-pressed="false">Relaxed</button>
+      <button class="fds-button" data-variant="outline" id="spaceLoose" aria-pressed="false">Loose</button>
+    </div>
+  </div>
+</div>
+
+<!-- voice sheet -->
+<div class="sc-sheet" id="voiceSheet" role="dialog" aria-label="Voice" hidden>
+  <div class="sc-sheet-handle" aria-hidden="true"><span></span></div>
+  <div class="sc-sheet-head">
+    <h3 class="sc-sheet-title">Voice</h3>
+    <button class="sc-panel-close" data-close-sheet aria-label="Close">
+      <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="sc-sheet-body" id="voiceList"></div>
+</div>
+
+<!-- chapters sheet -->
+<div class="sc-sheet" id="chaptersSheet" role="dialog" aria-label="Chapters" hidden>
+  <div class="sc-sheet-handle" aria-hidden="true"><span></span></div>
+  <div class="sc-sheet-head">
+    <h3 class="sc-sheet-title">Chapters</h3>
+    <button class="sc-panel-close" data-close-sheet aria-label="Close">
+      <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="sc-sheet-body sc-chapters-host" id="chapterList"></div>
+</div>
+
+<!-- appearance sheet -->
+<div class="sc-sheet" id="appearanceSheet" role="dialog" aria-label="Appearance" hidden>
+  <div class="sc-sheet-handle" aria-hidden="true"><span></span></div>
+  <div class="sc-sheet-head">
+    <h3 class="sc-sheet-title">Appearance</h3>
+    <button class="sc-panel-close" data-close-sheet aria-label="Close">
+      <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="sc-sheet-body">
+    <div class="sc-fontpop-row">
+      <span class="sc-fontpop-label">Theme</span>
+      <button class="fds-button" data-variant="outline" id="themeLight">
+        <i class="fa-regular fa-sun" aria-hidden="true"></i> Light
+      </button>
+      <button class="fds-button" data-variant="outline" id="themeDark">
+        <i class="fa-regular fa-moon" aria-hidden="true"></i> Dark
+      </button>
+      <button class="fds-button" data-variant="outline" id="themeSystem">System</button>
+    </div>
+  </div>
+</div>
+
+<!-- selection popover -->
+<div class="sc-pop" id="pop" hidden>
+  <div class="sc-pop-cats" id="popCats"></div>
+  <textarea class="fds-textarea" id="popNote" rows="2" placeholder="Add note (optional)"></textarea>
+  <div class="sc-pop-actions">
+    <button class="fds-button" data-variant="ghost" id="popCancel">Cancel</button>
+    <button class="fds-button" data-variant="primary" id="popSave">Save highlight</button>
+  </div>
+</div>
+
+<!-- category create/rename dialog -->
+<dialog class="fds-dialog" id="catDialog">
+  <h3 class="sc-dialog-title" id="catDialogTitle">New category</h3>
+  <input class="fds-input" id="catName" placeholder="Category name" maxlength="24">
+  <div class="sc-pop-cats" id="catColors"></div>
+  <div class="sc-pop-actions">
+    <button class="fds-button" data-variant="ghost" id="catCancel">Cancel</button>
+    <button class="fds-button" data-variant="primary" id="catSave">Create</button>
+  </div>
+</dialog>
+
+<audio id="audio" preload="auto"></audio>
+<script src="app.js?v=6e51dfd49e"></script>
+</body>
+</html>

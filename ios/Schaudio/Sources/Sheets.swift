@@ -1,0 +1,300 @@
+import SwiftUI
+
+// MARK: - Chapters
+
+struct ChaptersSheet: View {
+    let book: Book
+    let onPick: (Int) -> Void
+
+    @Environment(Store.self) private var store
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List(book.chapters) { chapter in
+                Button {
+                    onPick(chapter.n)
+                    dismiss()
+                } label: {
+                    HStack(spacing: 12) {
+                        Text("\(chapter.n)")
+                            .font(.footnote.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .frame(width: 26, alignment: .trailing)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(chapter.title).font(.subheadline)
+                            Text(subtitle(chapter))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if store.bookState(book.slug).chapter == chapter.n {
+                            Image(systemName: "speaker.wave.2.fill")
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+            .navigationTitle("Chapters")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
+        }
+    }
+
+    private func subtitle(_ chapter: Chapter) -> String {
+        let state = store.chapterState(book.slug, chapter.n)
+        if store.bookState(book.slug).chapter == chapter.n { return "Playing now" }
+        return state.positionMs > 1000 ? "Started" : "Tap to play"
+    }
+}
+
+// MARK: - Voice
+
+struct VoiceSheet: View {
+    let book: Book
+    let chapter: Int
+    let onChange: () async -> Void
+
+    @Environment(Store.self) private var store
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List(Voice.allCases) { voice in
+                Button {
+                    store.voice = voice
+                    store.save()
+                    Task { await onChange(); dismiss() }
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(voice.displayName).font(.headline)
+                            Text(voice.blurb).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if store.voice == voice {
+                            Image(systemName: "checkmark").foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+            .navigationTitle("Voice")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
+        }
+    }
+}
+
+// MARK: - Text settings
+
+struct TextSheet: View {
+    @Environment(Store.self) private var store
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        @Bindable var store = store
+        NavigationStack {
+            Form {
+                Section("Size") {
+                    Stepper(value: $store.appearance.textSize, in: 0...6) {
+                        Text("Text size \(store.appearance.textSize + 1) of 7")
+                    }
+                    .onChange(of: store.appearance.textSize) { _, _ in store.save() }
+                }
+                Section("Style") {
+                    Picker("Font", selection: $store.appearance.serif) {
+                        Text("Serif").tag(true)
+                        Text("Sans").tag(false)
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: store.appearance.serif) { _, _ in store.save() }
+
+                    Picker("Spacing", selection: $store.appearance.lineSpacing) {
+                        Text("Regular").tag(0)
+                        Text("Relaxed").tag(1)
+                        Text("Loose").tag(2)
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: store.appearance.lineSpacing) { _, _ in store.save() }
+                }
+                Section {
+                    Text("Sizes follow your system text size setting as well.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Text")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
+        }
+    }
+}
+
+// MARK: - Notes & bookmarks
+
+struct NotesSheet: View {
+    let book: Book
+    let chapter: Int
+
+    @Environment(Store.self) private var store
+    @Environment(Player.self) private var player
+    @Environment(\.dismiss) private var dismiss
+    @State private var tab = 0
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                Picker("", selection: $tab) {
+                    Text("Notes").tag(0)
+                    Text("Bookmarks").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .padding()
+
+                if tab == 0 { notesList } else { bookmarksList }
+            }
+            .navigationTitle("Notes")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
+        }
+    }
+
+    private var notesList: some View {
+        let items = store.chapterState(book.slug, chapter).highlights
+            .sorted { ($0.paragraph, $0.start) < ($1.paragraph, $1.start) }
+        return Group {
+            if items.isEmpty {
+                ContentUnavailableView("No highlights yet",
+                                       systemImage: "highlighter",
+                                       description: Text("Press and hold any word while you listen to highlight it."))
+            } else {
+                List {
+                    ForEach(items) { h in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("“\(h.quote)”").font(.callout)
+                            if !h.note.isEmpty {
+                                Text(h.note).font(.footnote).foregroundStyle(.secondary)
+                            }
+                            Label(store.category(h.categoryID).name, systemImage: "tag")
+                                .font(.caption2)
+                                .foregroundStyle(CategoryTint.color(store.category(h.categoryID).tint))
+                        }
+                        .padding(.vertical, 2)
+                    }
+                    .onDelete { offsets in
+                        let ids = offsets.map { items[$0].id }
+                        store.update(book.slug, chapter) { state in
+                            state.highlights.removeAll { ids.contains($0.id) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var bookmarksList: some View {
+        let items = store.chapterState(book.slug, chapter).bookmarks.sorted { $0.ms < $1.ms }
+        return Group {
+            if items.isEmpty {
+                ContentUnavailableView("No bookmarks",
+                                       systemImage: "bookmark",
+                                       description: Text("Tap the bookmark button in the player to pin a moment."))
+            } else {
+                List {
+                    ForEach(items) { b in
+                        Button {
+                            player.seek(toMs: b.ms)
+                            dismiss()
+                        } label: {
+                            HStack {
+                                Image(systemName: "bookmark.fill").foregroundStyle(Color.accentColor)
+                                Text(b.label).lineLimit(1)
+                                Spacer()
+                                Text(PlayerBar.time(b.ms))
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .onDelete { offsets in
+                        let ids = offsets.map { items[$0].id }
+                        store.update(book.slug, chapter) { state in
+                            state.bookmarks.removeAll { ids.contains($0.id) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Creating a highlight
+
+struct HighlightSheet: View {
+    let book: Book
+    let chapter: Int
+    let range: TokenRange
+    let onDone: () -> Void
+
+    @Environment(Store.self) private var store
+    @Environment(Player.self) private var player
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var categoryID: String = Category.defaults[0].id
+    @State private var note: String = ""
+    @State private var extra: Int = 0     // words to extend the selection by
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Passage") {
+                    Text("“\(quote)”").font(.callout)
+                    Stepper("Include \(extra + 1) word\(extra == 0 ? "" : "s")", value: $extra, in: 0...60)
+                }
+                Section("Category") {
+                    Picker("Category", selection: $categoryID) {
+                        ForEach(store.categories) { c in Text(c.name).tag(c.id) }
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                }
+                Section("Note") {
+                    TextField("Optional note", text: $note, axis: .vertical).lineLimit(2...5)
+                }
+            }
+            .navigationTitle("Highlight")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss(); onDone() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Save") { save() }.bold()
+                }
+            }
+        }
+    }
+
+    private var endIndex: Int { range.end + extra }
+
+    private var quote: String {
+        player.tokens
+            .filter { $0.index >= range.start && $0.index <= endIndex && $0.paragraph == range.paragraph }
+            .map(\.text)
+            .joined(separator: " ")
+    }
+
+    private func save() {
+        store.update(book.slug, chapter) { state in
+            state.highlights.append(
+                Highlight(paragraph: range.paragraph, start: range.start, end: endIndex,
+                          categoryID: categoryID, note: note, quote: quote)
+            )
+        }
+        dismiss()
+        onDone()
+    }
+}
