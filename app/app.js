@@ -1,4 +1,4 @@
-/* Book FM (formerly Schaudio) — audiobook reader on Flavor DS.
+/* Schaudio — audiobook reader on Flavor DS.
    Audio<->text sync is driven by measured word timings in each book's
    manifest.json (edge-tts WordBoundary events), not estimates. */
 

@@ -68,7 +68,7 @@ struct LibraryView: View {
                     .padding(20)
                 }
             }
-            .navigationTitle("Book FM")
+            .navigationTitle("Schaudio")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAccount = true } label: {

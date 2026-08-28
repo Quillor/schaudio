@@ -1,4 +1,4 @@
-# Book FM (Schaudio)
+# Schaudio
 
 An audiobook app template built on **Flavor DS** (https://flavor-ds.vercel.app), with true
 audio↔text sync: every word's timing is measured at narration time, so the spoken word is lit
