@@ -1,11 +1,6 @@
 {
   "version": "0.0.1",
   "configurations": [
-    {
-      "name": "schaudio",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8741", "--directory", "/Users/timrosenberg/claude/schaudio"],
-      "port": 8741
-    }
+    { "name": "schaudio", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "8741"], "port": 8741 }
   ]
 }

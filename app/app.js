@@ -55,6 +55,12 @@ function loadStore() {
       s = JSON.parse(localStorage.getItem("schaudio:v1")) || {};
     }
   } catch { /* ignore */ }
+  return normalizeStore(s);
+}
+
+// Defaults applied to both a fresh local store and a pulled remote blob —
+// without this, a blob synced before a field existed silently wipes it.
+function normalizeStore(s) {
   s.books ||= {};
   s.categories ||= [
     { id: "c1", name: "Key concept", color: "accent" },
@@ -68,6 +74,9 @@ function loadStore() {
   s.appearance ||= { size: 2, font: "serif", space: "regular" };
   s.user ||= null;
   s.voice ||= "sam";
+  s.librarySort ||= "recent";
+  s.pinned ||= [];
+  s.playlistPos ||= {};
   return s;
 }
 const save = () => {
@@ -251,7 +260,7 @@ function renderHome() {
   // grid
   const grid = $("bookGrid");
   grid.replaceChildren();
-  for (const slug of SLUGS) {
+  for (const slug of sortedSlugs()) {
     const { book } = books.get(slug);
     const b = bookState(slug);
     const started = Object.values(b.chapters || {}).filter((c) => c.positionMs > 1000).length;
@@ -267,8 +276,43 @@ function renderHome() {
       <span class="sc-tile-sub">${esc(book.author)} · ${book.chapters.filter((c) => !c.bib).length} chapters</span>`;
     el.setAttribute("aria-label", `${book.title}, ${started} of ${book.chapters.filter((c) => !c.bib).length} chapters started`);
     el.addEventListener("click", () => openWithZoom(slug, el.querySelector(".sc-tile-cover")));
+    const pinned = store.pinned.includes(slug);
+    // Tiles are <button>s, so the pin cannot be a nested button.
+    const pin = document.createElement("span");
+    pin.className = "sc-tile-pin";
+    pin.setAttribute("role", "button");
+    pin.setAttribute("tabindex", "0");
+    pin.setAttribute("aria-pressed", String(pinned));
+    pin.setAttribute("aria-label", pinned ? `Unpin ${book.title}` : `Pin ${book.title}`);
+    pin.dataset.pinned = String(pinned);
+    pin.innerHTML = '<i class="fa-solid fa-thumbtack" aria-hidden="true"></i>';
+    const flip = (e) => { e.stopPropagation(); e.preventDefault(); togglePin(slug); };
+    pin.addEventListener("click", flip);
+    pin.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") flip(e); });
+    el.querySelector(".sc-tile-coverwrap").appendChild(pin);
     grid.appendChild(el);
   }
+  const sortSel = $("librarySort");
+  if (sortSel && sortSel.value !== store.librarySort) sortSel.value = store.librarySort;
+}
+
+// Pinned books first (in pin order), then the chosen sort.
+function sortedSlugs() {
+  const cmp = {
+    recent: (a, b) => (bookState(b).lastPlayedAt || 0) - (bookState(a).lastPlayedAt || 0),
+    oldest: (a, b) => (bookState(a).lastPlayedAt || 0) - (bookState(b).lastPlayedAt || 0),
+    alpha: (a, b) => books.get(a).book.title.localeCompare(books.get(b).book.title),
+  }[store.librarySort] || (() => 0);
+  const pinned = store.pinned.filter((s) => SLUGS.includes(s));
+  const rest = SLUGS.filter((s) => !pinned.includes(s)).sort(cmp);
+  return [...pinned, ...rest];
+}
+
+function togglePin(slug) {
+  const i = store.pinned.indexOf(slug);
+  if (i >= 0) store.pinned.splice(i, 1); else store.pinned.push(slug);
+  save();
+  renderHome();
 }
 
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -295,8 +339,11 @@ async function openBook(slug, { autoplay = false, chapter = null } = {}) {
   }
   entry.manifest = manifest;
 
+  bookState(slug).lastPlayedAt = Date.now();
   $("bookTitle").textContent = entry.book.title;
+  $("bookAuthor").textContent = entry.book.author ? `by ${entry.book.author}` : "";
   $("bookChapter").textContent = ch.title;
+  $("transportChapter").textContent = ch.title;
   $("deskCover").src = mediaUrl(`books/${slug}/cover.png`);
   $("deskChapter").textContent = ch.title;
 
@@ -1205,6 +1252,7 @@ async function pullRemote() {
   if (remote && (remote.updatedAt || 0) > (store.updatedAt || 0)) {
     Object.keys(store).forEach((k) => delete store[k]);
     Object.assign(store, remote);
+    normalizeStore(store);
     localStorage.setItem(STORE_KEY, JSON.stringify(store));
     // re-render everything visible from the fresher state
     applyTheme(store.theme, false);
@@ -1303,6 +1351,11 @@ function wireEvents() {
     applyTransportMode();
   });
   $("continueBtn").addEventListener("click", () => openWithZoom(store.lastBook, $("continueCover"), { autoplay: true }));
+  $("librarySort").addEventListener("change", (e) => {
+    store.librarySort = e.target.value;
+    save();
+    renderHome();
+  });
 
   // transport
   $("playPause").addEventListener("click", () => (playing ? pause() : play()));

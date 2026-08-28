@@ -1215,6 +1215,8 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
   --accent-text: #7a3322;
   --accent-subtle: #f3e0d6;
   --focus-ring: #b06a4f;
+  --accent-subtle-hover: #ecd5c7; /* fds hover states fell through to blue */
+  --accent-border: #c98a72;
   --surface-page: #f6f0e4;       /* body behind cards; slightly deeper cream */
   --surface-sunken: #efe7d7;
 }
@@ -1228,6 +1230,8 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
   --accent-fg: #fff5ec;
   --accent-text: #e89a76;
   --accent-subtle: #3a241b;
+  --accent-subtle-hover: #4a2e21;
+  --accent-border: #8a4a33;
   --focus-ring: #d98a63;
 }
 
@@ -1251,3 +1255,51 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
     inline-size: calc(100% + 2 * var(--space-4));
   }
 }
+
+/* ---- reader header author + transport chapter line ---- */
+.sc-reader-author {
+  display: block;
+  font-size: var(--font-size-1);
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+.sc-transport-chapter {
+  font-size: var(--font-size-1);
+  color: var(--text-secondary);
+  text-align: center;
+  padding-block-start: var(--space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-inline: var(--space-5);
+}
+body[data-transport="min"] .sc-transport-chapter { display: none; }
+
+/* ---- library sort + pins ---- */
+.sc-library-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.sc-library-sort { max-inline-size: 170px; }
+.sc-tile-coverwrap { position: relative; }
+.sc-tile-pin {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  display: grid; place-items: center;
+  inline-size: 32px; block-size: 32px;
+  border-radius: var(--radius-round);
+  background: color-mix(in srgb, var(--surface-1) 82%, transparent);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-fast, .15s);
+}
+.sc-tile:hover .sc-tile-pin,
+.sc-tile-pin:focus-visible,
+.sc-tile-pin[data-pinned="true"] { opacity: 1; }
+.sc-tile-pin[data-pinned="true"] { color: var(--accent-bg); }
+.sc-tile-pin i { font-size: 14px; }
+@media (hover: none) { .sc-tile-pin { opacity: 1; } }

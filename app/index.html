@@ -76,7 +76,14 @@
       </button>
     </section>
 
-    <h2 class="sc-home-heading">Your library</h2>
+    <div class="sc-library-head">
+      <h2 class="sc-home-heading">Your library</h2>
+      <select class="fds-select sc-library-sort" id="librarySort" aria-label="Sort books">
+        <option value="recent">Most recent</option>
+        <option value="oldest">Oldest</option>
+        <option value="alpha">Alphabetical</option>
+      </select>
+    </div>
     <div class="sc-grid" id="bookGrid"></div>
   </main>
 </div>
@@ -86,6 +93,7 @@
   <header class="sc-appbar">
     <span class="sc-reader-head">
       <span class="sc-reader-title" id="bookTitle"></span>
+      <span class="sc-reader-author" id="bookAuthor"></span>
       <span class="sc-reader-chapter" id="bookChapter"></span>
     </span>
     <span class="sc-appbar-spacer"></span>
@@ -116,6 +124,7 @@
 
   <!-- transport -->
   <footer class="sc-transport" id="transport" aria-label="Player">
+    <div class="sc-transport-chapter" id="transportChapter"></div>
     <div class="sc-scrub-row">
       <div class="sc-scrub" id="scrub" role="slider" tabindex="0" aria-label="Position"
            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
