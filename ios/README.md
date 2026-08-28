@@ -120,27 +120,36 @@ the user's iCloud quota (Apple rejects apps that get this wrong).
 
 ## TestFlight
 
-Not possible from this checkout yet. A TestFlight build needs four things that
-aren't here: a paid Apple Developer Program membership, an Apple Distribution
-certificate (the only signing identity on this machine is a *Developer ID*
-one, which signs Mac apps outside the App Store), an App Store Connect record
-for `com.quillor.schaudio`, and a `DEVELOPMENT_TEAM` in `project.yml` (still
-`""`). Once those exist:
+`tools/testflight.sh` does the whole run — generate, archive, export, validate,
+upload — and stamps the build number from the commit count so every upload is
+unique and traceable:
 
 ```bash
-cd ios && xcodegen generate
-xcodebuild -project Schaudio.xcodeproj -scheme Schaudio \
-  -sdk iphoneos -configuration Release -archivePath build/Schaudio.xcarchive archive
-xcodebuild -exportArchive -archivePath build/Schaudio.xcarchive \
-  -exportOptionsPlist ExportOptions.plist -exportPath build/export
-xcrun altool --upload-app -f build/export/Schaudio.ipa -t ios \
-  --apiKey <key-id> --apiIssuer <issuer-id>
+ASC_KEY_ID=XXXXXXXXXX ASC_ISSUER_ID=<uuid> DEVELOPMENT_TEAM=<10-char team> \
+  tools/testflight.sh
 ```
 
-Sign in with Apple is also required before App Store review will pass, since
-the app offers Google sign-in (see *Not done yet*). TestFlight itself only
-needs the beta review, which is lighter, but the same rule is applied to
-external testing groups.
+It needs an App Store Connect API key, which is what makes the run unattended:
+App Store Connect → Users and Access → Integrations → App Store Connect API →
+**+**, role **App Manager**. The `.p8` downloads once and Apple never shows it
+again; put it where `altool` and `xcodebuild` look:
+
+```bash
+mkdir -p ~/.appstoreconnect/private_keys
+mv ~/Downloads/AuthKey_XXXXXXXXXX.p8 ~/.appstoreconnect/private_keys/
+```
+
+`-allowProvisioningUpdates` with that key lets Xcode register the bundle ID and
+mint the distribution certificate and profile itself, so no certificate wrangling
+is needed. The one thing the key cannot create is the **App Store Connect app
+record** — add `com.quillor.schaudio` once under Apps → **+** → New App (iOS,
+"Schaudio", primary language, SKU) or the upload is rejected with "no suitable
+application record".
+
+Sign in with Apple is required before *App Store* review will pass, since the
+app offers Google sign-in (see *Not done yet*). Internal TestFlight testing —
+up to 100 people on your own team — skips beta review entirely; external groups
+get a lighter review that applies the same rule.
 
 ## Not done yet
 
