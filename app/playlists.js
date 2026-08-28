@@ -139,13 +139,27 @@ function selectTopTab(tab, { setHash = true } = {}) {
 function renderPlaylists() {
   const host = $("playlistList");
   host.replaceChildren();
+  // Creating playlists requires an account in production (they sync and can
+  // be shared); dev has no auth, so keep creation available there.
+  const canCreate = IS_DEV || (typeof sbUser !== "undefined" && !!sbUser);
+  $("plNew").hidden = !canCreate;
   if (!plStore.playlists.length) {
     const empty = document.createElement("div");
     empty.className = "sc-pl-empty";
-    empty.innerHTML = `
-      <i class="fa-regular fa-list-music" aria-hidden="true"></i>
-      <p class="sc-pl-empty-title">No playlists yet</p>
-      <p class="sc-pl-empty-sub">Collect chapters from any book into one queue — a study guide, a themed mix, a syllabus.</p>`;
+    if (canCreate) {
+      empty.innerHTML = `
+        <i class="fa-regular fa-list-music" aria-hidden="true"></i>
+        <p class="sc-pl-empty-title">No playlists yet</p>
+        <p class="sc-pl-empty-sub">Collect chapters from any book into one queue — a study guide, a themed mix, a syllabus.</p>`;
+    } else {
+      empty.innerHTML = `
+        <i class="fa-regular fa-list-music" aria-hidden="true"></i>
+        <p class="sc-pl-empty-title">Make the books your own</p>
+        <p class="sc-pl-empty-sub">Sign up to build playlists that mix chapters from any book, keep them in sync
+        across your devices, and share them — notes included — with anyone.</p>
+        <button class="fds-button sc-pl-empty-cta" data-variant="primary" id="plPromoSignIn">Sign up with Google</button>`;
+      empty.querySelector("#plPromoSignIn").addEventListener("click", (e) => startGoogleSignIn(e.currentTarget));
+    }
     host.appendChild(empty);
     return;
   }
@@ -709,6 +723,7 @@ async function plPull() {
 }
 
 function plOnAuthReady() {
+  if (!$("homePlaylistsPane").hidden) renderPlaylists();
   plPull();
   const h = location.hash;
   if (h.startsWith("#/pl/")) openSharedLink(h.slice(5));

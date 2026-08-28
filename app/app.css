@@ -1510,3 +1510,10 @@ body[data-transport="min"] .sc-transport-chapter { display: none; }
   margin-block-start: var(--space-2);
   font-size: var(--font-size-1); font-weight: 600; color: var(--accent-text);
 }
+
+.sc-pl-empty-cta { margin-block-start: var(--space-4); }
+
+/* fds-button's display beats the hidden attribute (same trap as .sc-pop) */
+.fds-button[hidden], #plNew[hidden] { display: none !important; }
+.sc-pl-empty { text-align: center; }
+.sc-pl-empty > i { margin-inline: auto; text-align: center; inline-size: 100%; }
