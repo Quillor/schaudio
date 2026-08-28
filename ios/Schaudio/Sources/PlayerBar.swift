@@ -20,7 +20,8 @@ struct PlayerBar: View {
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 6)
-        .background(.bar)
+        .background(Palette.surface2)
+        .overlay(alignment: .top) { Palette.borderSubtle.frame(height: 1) }
     }
 
     private var scrubber: some View {
@@ -45,7 +46,7 @@ struct PlayerBar: View {
                 Text("−" + Self.time(max(0, player.totalMs - (scrubbing ? Int(scrubValue) : player.positionMs))))
             }
             .font(.caption2.monospacedDigit())
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Palette.textTertiary)
         }
     }
 
@@ -87,6 +88,7 @@ struct PlayerBar: View {
             .accessibilityLabel("Add bookmark")
         }
         .buttonStyle(.plain)
+        .foregroundStyle(Palette.accent)
     }
 
     private var menuRow: some View {
@@ -105,6 +107,7 @@ struct PlayerBar: View {
                 Text(label).font(.caption2)
             }
             .frame(maxWidth: .infinity, minHeight: 44)
+            .foregroundStyle(Palette.textSecondary)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)

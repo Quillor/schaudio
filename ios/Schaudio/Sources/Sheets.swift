@@ -9,43 +9,153 @@ struct ChaptersSheet: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
 
+    private var narratedCount: Int { book.chapters.filter { !$0.isBibliography }.count }
+    private var startedCount: Int {
+        book.chapters.filter { !$0.isBibliography && store.chapterState(book.slug, $0.n).positionMs > 1000 }.count
+    }
+
     var body: some View {
         NavigationStack {
-            List(book.chapters) { chapter in
-                Button {
-                    onPick(chapter.n)
-                    dismiss()
-                } label: {
-                    HStack(spacing: 12) {
-                        Text("\(chapter.n)")
-                            .font(.footnote.monospacedDigit())
-                            .foregroundStyle(.secondary)
-                            .frame(width: 26, alignment: .trailing)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(chapter.title).font(.subheadline)
-                            Text(subtitle(chapter))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        if store.bookState(book.slug).chapter == chapter.n {
-                            Image(systemName: "speaker.wave.2.fill")
-                                .foregroundStyle(Color.accentColor)
-                        }
+            List {
+                Section {
+                    ForEach(book.chapters) { chapter in
+                        row(chapter)
+                            // Full-bleed: the current row's tint reaches the
+                            // sheet's edges instead of floating inside a gutter.
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(background(chapter))
+                            .listRowSeparatorTint(Palette.borderSubtle)
                     }
+                } header: {
+                    Text("Chapter \(store.bookState(book.slug).chapter) of \(narratedCount) · \(startedCount) started")
+                        .font(.caption.weight(.semibold))
+                        .kerning(0.6)
+                        .textCase(.uppercase)
+                        .foregroundStyle(Palette.textTertiary)
                 }
-                .buttonStyle(.plain)
             }
+            .listStyle(.plain)
+            .background(Palette.surface1)
             .navigationTitle("Chapters")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
         }
     }
 
+    @ViewBuilder
+    private func row(_ chapter: Chapter) -> some View {
+        let state = progress(chapter)
+        Button {
+            onPick(chapter.n)
+            dismiss()
+        } label: {
+            HStack(spacing: 12) {
+                // Accent rail on the chapter you're on.
+                Rectangle()
+                    .fill(isCurrent(chapter) ? Palette.accent : .clear)
+                    .frame(width: 3)
+
+                numberColumn(chapter)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(chapter.title)
+                        .font(.subheadline.weight(isCurrent(chapter) ? .semibold : .medium))
+                        .foregroundStyle(isCurrent(chapter) ? Palette.accentText
+                                         : chapter.isBibliography ? Palette.textTertiary : Palette.textPrimary)
+                        .multilineTextAlignment(.leading)
+                    Text(subtitle(chapter))
+                        .font(.caption)
+                        .foregroundStyle(Palette.textTertiary)
+                    if state.fraction > 0, state.fraction < 0.98, !isCurrent(chapter) {
+                        progressBar(state.fraction)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                // The glyph is an affordance, not the focal point: quiet on
+                // idle rows, accented only on the one that's playing.
+                Image(systemName: chapter.isBibliography ? "book"
+                                  : isCurrent(chapter) ? "speaker.wave.2.fill" : "play.fill")
+                    .font(.footnote)
+                    .foregroundStyle(isCurrent(chapter) ? Palette.accent : Palette.textTertiary)
+            }
+            .padding(.trailing, 20)
+            .padding(.vertical, 10)
+            .frame(minHeight: 52)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .disabled(chapter.isBibliography)
+        .accessibilityLabel("Chapter \(chapter.displayLabel), \(chapter.title), \(accessibilityStatus(chapter))")
+    }
+
+    @ViewBuilder
+    private func numberColumn(_ chapter: Chapter) -> some View {
+        let finished = progress(chapter).fraction >= 0.98
+        Group {
+            if finished, !isCurrent(chapter) {
+                Image(systemName: "checkmark").font(.footnote.weight(.semibold))
+            } else {
+                Text(chapter.displayLabel)
+                    .font(.footnote.monospacedDigit())
+                    .fontWeight(isCurrent(chapter) ? .bold : .regular)
+            }
+        }
+        .foregroundStyle(isCurrent(chapter) ? Palette.accentText : Palette.textTertiary)
+        .frame(width: 30, alignment: .trailing)
+    }
+
+    private func progressBar(_ fraction: Double) -> some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Palette.borderDefault)
+                Capsule().fill(Palette.accent).frame(width: geo.size.width * fraction)
+            }
+        }
+        .frame(height: 3)
+        .frame(maxWidth: 220)
+        .padding(.top, 4)
+    }
+
+    private func background(_ chapter: Chapter) -> some View {
+        (isCurrent(chapter) ? Palette.accentSubtle : Palette.surface1)
+    }
+
+    private func isCurrent(_ chapter: Chapter) -> Bool {
+        store.bookState(book.slug).chapter == chapter.n
+    }
+
+    /// How far through the chapter the reader is. Duration is only known once a
+    /// manifest has been fetched, so fall back to the word-count estimate — the
+    /// same fallback the web app uses, so both surfaces agree.
+    private func progress(_ chapter: Chapter) -> (positionMs: Int, fraction: Double) {
+        let pos = store.chapterState(book.slug, chapter.n).positionMs
+        let est = chapter.estimatedMs
+        guard est > 0 else { return (pos, 0) }
+        return (pos, min(1, Double(pos) / Double(est)))
+    }
+
     private func subtitle(_ chapter: Chapter) -> String {
-        let state = store.chapterState(book.slug, chapter.n)
-        if store.bookState(book.slug).chapter == chapter.n { return "Playing now" }
-        return state.positionMs > 1000 ? "Started" : "Tap to play"
+        if chapter.isBibliography { return "Text only — references" }
+        let (pos, fraction) = progress(chapter)
+        let duration = chapter.estimatedMs > 0 ? PlayerBar.time(chapter.estimatedMs) : ""
+        // The speaker glyph already marks the playing row; a "Now playing"
+        // badge next to it was saying the same thing twice.
+        let status: String
+        if isCurrent(chapter) { status = "" }
+        else if fraction >= 0.98 { status = "Finished" }
+        else if pos > 1000 {
+            status = "\(Int(fraction * 100))% · \(PlayerBar.time(max(0, chapter.estimatedMs - pos))) left"
+        } else { status = "Not started" }
+        return [status, duration].filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    private func accessibilityStatus(_ chapter: Chapter) -> String {
+        if chapter.isBibliography { return "text only, references" }
+        if isCurrent(chapter) { return "now playing" }
+        let (pos, fraction) = progress(chapter)
+        if fraction >= 0.98 { return "finished" }
+        return pos > 1000 ? "\(Int(fraction * 100)) percent listened" : "not started"
     }
 }
 

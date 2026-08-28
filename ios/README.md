@@ -39,8 +39,10 @@ xcodebuild -project Schaudio.xcodeproj -scheme Schaudio \
 ## Where the content comes from
 
 Nothing is bundled. The app reads the same JSON and MP3s the website serves, from
-`https://schaudio-tim-rosenberg.vercel.app/app/books/…`, and caches every file it
-fetches under Caches. Re-running `tools/ingest.py` / `tools/narrate.py` and
+Cloudflare R2 (`https://pub-83aebd7fcc2b48538b1f792814c1fc14.r2.dev/books/…`),
+and caches every file it fetches under Caches. That base must match
+`window.SCHAUDIO.mediaBase` in `app/index.html` — the corpus moved off Vercel
+when deploys went code-only, and the old `/app/books` path now 404s. Re-running `tools/ingest.py` / `tools/narrate.py` and
 redeploying updates the phone too, with no App Store round trip. A chapter you
 have already opened keeps working offline.
 
@@ -77,8 +79,11 @@ exists in a release build:
 ```bash
 SIMCTL_CHILD_SCHAUDIO_OPEN_BOOK=lifespan \
 SIMCTL_CHILD_SCHAUDIO_AUTOPLAY=1 \
+SIMCTL_CHILD_SCHAUDIO_OPEN_SHEET=chapters \
 xcrun simctl launch <device-udid> com.quillor.schaudio
 ```
+
+`SCHAUDIO_OPEN_SHEET` takes `chapters`, `voice`, `text` or `notes`.
 
 ## Sign-in and sync
 
@@ -112,6 +117,30 @@ prefers a local file when one exists, so a downloaded book never touches the
 network — verified by checking the `AVPlayerItem` URL scheme is `file`. Files
 are flagged `isExcludedFromBackup`, because re-downloadable audio must not eat
 the user's iCloud quota (Apple rejects apps that get this wrong).
+
+## TestFlight
+
+Not possible from this checkout yet. A TestFlight build needs four things that
+aren't here: a paid Apple Developer Program membership, an Apple Distribution
+certificate (the only signing identity on this machine is a *Developer ID*
+one, which signs Mac apps outside the App Store), an App Store Connect record
+for `com.quillor.schaudio`, and a `DEVELOPMENT_TEAM` in `project.yml` (still
+`""`). Once those exist:
+
+```bash
+cd ios && xcodegen generate
+xcodebuild -project Schaudio.xcodeproj -scheme Schaudio \
+  -sdk iphoneos -configuration Release -archivePath build/Schaudio.xcarchive archive
+xcodebuild -exportArchive -archivePath build/Schaudio.xcarchive \
+  -exportOptionsPlist ExportOptions.plist -exportPath build/export
+xcrun altool --upload-app -f build/export/Schaudio.ipa -t ios \
+  --apiKey <key-id> --apiIssuer <issuer-id>
+```
+
+Sign in with Apple is also required before App Store review will pass, since
+the app offers Google sign-in (see *Not done yet*). TestFlight itself only
+needs the beta review, which is lighter, but the same rule is applied to
+external testing groups.
 
 ## Not done yet
 

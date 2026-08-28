@@ -17,6 +17,10 @@ final class Player {
 
     var rate: Float = 1.0 {
         didSet {
+            // defaultRate is what AVQueuePlayer restores when it advances to
+            // the next paragraph item; setting only `rate` let every paragraph
+            // and chapter boundary snap playback back to 1.0×.
+            queue?.defaultRate = rate
             queue?.rate = isPlaying ? rate : 0
             updateNowPlaying()
         }
@@ -27,6 +31,8 @@ final class Player {
     private var paragraphStarts: [Int] = []      // ms offset per paragraph
     private var timeObserver: Any?
     private var endObserver: NSObjectProtocol?
+    private var itemObservation: NSKeyValueObservation?
+    private var rateObservation: NSKeyValueObservation?
 
     private var book: Book?
     private var chapter: Chapter?
@@ -76,10 +82,15 @@ final class Player {
             // A downloaded copy wins, so an offline book never touches the network.
             let url = downloads?.localURL(slug: book.slug, relativePath: para.audio)
                 ?? library.audioURL(slug: book.slug, relativePath: para.audio)
-            return AVPlayerItem(url: url)
+            let item = AVPlayerItem(url: url)
+            // Speech held at 1.5×–2× stays intelligible with the time-domain
+            // algorithm; the default smears consonants.
+            item.audioTimePitchAlgorithm = .timeDomain
+            return item
         }
         let q = AVQueuePlayer(items: items)
         q.actionAtItemEnd = .advance
+        q.defaultRate = rate
         queue = q
 
         addObservers()
@@ -96,6 +107,10 @@ final class Player {
         timeObserver = nil
         if let endObserver { NotificationCenter.default.removeObserver(endObserver) }
         endObserver = nil
+        itemObservation?.invalidate()
+        itemObservation = nil
+        rateObservation?.invalidate()
+        rateObservation = nil
         queue?.removeAllItems()
         queue = nil
         items = []
@@ -111,6 +126,23 @@ final class Player {
         let interval = CMTime(seconds: 0.05, preferredTimescale: 600)
         timeObserver = queue.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
+        }
+        // Belt and braces: AVQueuePlayer has historically reset `rate` on an
+        // item transition even with defaultRate set. Re-pin it if it drifts
+        // while we believe we are playing.
+        itemObservation = queue.observe(\.currentItem, options: [.new]) { [weak self] player, _ in
+            MainActor.assumeIsolated {
+                guard let self, self.isPlaying else { return }
+                player.defaultRate = self.rate
+                if player.rate != 0, player.rate != self.rate { player.rate = self.rate }
+            }
+        }
+        rateObservation = queue.observe(\.rate, options: [.new]) { [weak self] player, _ in
+            MainActor.assumeIsolated {
+                guard let self, self.isPlaying, player.rate != 0,
+                      player.rate != self.rate else { return }
+                player.rate = self.rate
+            }
         }
         endObserver = NotificationCenter.default.addObserver(
             forName: AVPlayerItem.didPlayToEndTimeNotification,
@@ -129,6 +161,7 @@ final class Player {
 
     func play() {
         guard let queue else { return }
+        queue.defaultRate = rate
         queue.rate = rate
         isPlaying = true
         updateNowPlaying()

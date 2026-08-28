@@ -17,6 +17,9 @@ struct SchaudioApp: App {
     var body: some Scene {
         WindowGroup {
             LibraryView()
+                // One accent for the whole app: the leather red-brown the web
+                // app re-bases Flavor DS to.
+                .tint(Palette.accent)
                 .environment(library)
                 .environment(store)
                 .environment(player)

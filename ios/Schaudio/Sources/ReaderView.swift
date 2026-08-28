@@ -41,7 +41,10 @@ struct ReaderView: View {
             }
             .safeAreaInset(edge: .bottom) { PlayerBar(sheet: $sheet) }
         }
-        .task { await open(chapterNumber: store.bookState(book.slug).chapter) }
+        .task {
+            await open(chapterNumber: store.bookState(book.slug).chapter)
+            if let debugSheet { sheet = debugSheet }
+        }
         .onDisappear { player.stop() }
         .sheet(item: $sheet) { which in
             switch which {
@@ -82,7 +85,9 @@ struct ReaderView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
                 .padding(.bottom, 200)
+                .foregroundStyle(Palette.textPrimary)
             }
+            .background(Palette.surface1)
             .simultaneousGesture(DragGesture().onChanged { _ in lastUserScroll = .now })
             .onChange(of: player.currentTokenIndex) { _, new in
                 guard followPlayback, player.isPlaying,
@@ -150,6 +155,16 @@ struct ReaderView: View {
 
     // MARK: - Loading
 
+    /// Debug-only: open one of the reader sheets on launch so an automated run
+    /// can screenshot it. Never compiled into a release build.
+    private var debugSheet: ReaderSheet? {
+        #if DEBUG
+        ProcessInfo.processInfo.environment["SCHAUDIO_OPEN_SHEET"].flatMap(ReaderSheet.init(rawValue:))
+        #else
+        nil
+        #endif
+    }
+
     private var debugAutoplay: Bool {
         #if DEBUG
         ProcessInfo.processInfo.environment["SCHAUDIO_AUTOPLAY"] == "1"
@@ -190,10 +205,27 @@ struct ReaderView: View {
         loading = false
     }
 
+    /// Roll into the next chapter that actually has audio. Bibliography entries
+    /// are text-only, and a chapter whose narration hasn't been rendered yet
+    /// would strand autoplay on a silent page — step over both.
     private func advanceChapter(after n: Int) async {
-        guard let idx = book.chapters.firstIndex(where: { $0.n == n }),
-              idx + 1 < book.chapters.count else { return }
-        await open(chapterNumber: book.chapters[idx + 1].n, autoplay: true)
+        guard let next = await nextNarratedChapter(after: n) else { return }
+        // Always start the next chapter at the top: a saved position sitting at
+        // the very end would finish instantly and cascade onward.
+        store.update(book.slug, next.n) { $0.positionMs = 0 }
+        await open(chapterNumber: next.n, autoplay: true)
+    }
+
+    private func nextNarratedChapter(after n: Int) async -> Chapter? {
+        guard let idx = book.chapters.firstIndex(where: { $0.n == n }) else { return nil }
+        for candidate in book.chapters[(idx + 1)...] where !candidate.isBibliography {
+            for voice in [store.voice] + Voice.allCases.filter({ $0 != store.voice }) {
+                if await library.manifest(slug: book.slug, voice: voice, chapter: candidate.n) != nil {
+                    return candidate
+                }
+            }
+        }
+        return nil
     }
 
     private func reloadForVoiceChange() async {

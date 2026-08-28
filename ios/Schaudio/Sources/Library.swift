@@ -1,12 +1,14 @@
 import Foundation
 
-/// Content lives on the deployed site so the phone and the web app never
-/// drift apart. Everything fetched is cached on disk, so a chapter you have
-/// already opened keeps working with no signal.
+/// Content lives where the web app's `window.SCHAUDIO.mediaBase` points so the
+/// phone and the browser never drift apart. The 2.6 GB corpus moved off Vercel
+/// to Cloudflare R2 (see tools/publish_r2.py) — the old /app/books path now
+/// 404s, so this must match `app/index.html`. Everything fetched is cached on
+/// disk, so a chapter you have already opened keeps working with no signal.
 @Observable
 @MainActor
 final class Library {
-    static let base = URL(string: "https://schaudio-tim-rosenberg.vercel.app/app/books")!
+    static let base = URL(string: "https://pub-83aebd7fcc2b48538b1f792814c1fc14.r2.dev/books")!
     static let slugs = ["lifespan", "counseling", "research-methods", "wampold-common-factors"]
 
     private(set) var books: [Book] = []

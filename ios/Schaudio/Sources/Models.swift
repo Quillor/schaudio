@@ -17,8 +17,21 @@ struct Chapter: Codable, Identifiable, Sendable, Hashable {
     let n: Int
     let title: String
     let paragraphs: [String]
+    /// Bibliography entries are text-only: no narration is ever generated for
+    /// them, so autoplay must step over them rather than stall on silence.
+    let bib: Bool?
+    let excerpt: Bool?
+    /// Display number ("2-A" for a bibliography insert); falls back to `n`.
+    let label: String?
+    let words: Int?
 
     var id: Int { n }
+    var isBibliography: Bool { bib == true }
+    var displayLabel: String { label ?? String(n) }
+
+    /// Rough duration before a manifest has ever been fetched, at the ~151 wpm
+    /// the narrator actually renders — the same estimate the web app shows.
+    var estimatedMs: Int { words.map { Int(Double($0) / 151.0 * 60_000) } ?? 0 }
 }
 
 struct Manifest: Codable, Sendable {

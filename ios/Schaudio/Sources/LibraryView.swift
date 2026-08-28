@@ -85,7 +85,7 @@ struct LibraryView: View {
                 }
             }
             .sheet(isPresented: $showAccount) { AccountView() }
-            .background(Color(.systemGroupedBackground))
+            .background(Palette.surfacePage)
             .fullScreenCover(item: $opened) { book in
                 ReaderView(book: book)
             }
@@ -121,7 +121,7 @@ struct LibraryView: View {
                 if started > 0 {
                     GeometryReader { geo in
                         Rectangle()
-                            .fill(Color.accentColor)
+                            .fill(Palette.accent)
                             .frame(width: geo.size.width * CGFloat(started) / CGFloat(book.chapters.count),
                                    height: 4)
                             .frame(maxHeight: .infinity, alignment: .bottom)
@@ -135,18 +135,19 @@ struct LibraryView: View {
 
             Text(book.title)
                 .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Palette.textPrimary)
                 .lineLimit(2)
             HStack(spacing: 4) {
                 if case .complete = downloads.state(book.slug) {
                     Image(systemName: "arrow.down.circle.fill")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Palette.textTertiary)
                         .accessibilityLabel("Downloaded")
                 }
                 Text("\(book.author) · \(book.chapters.count) chapters")
             }
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Palette.textSecondary)
                 .lineLimit(2)
         }
     }
