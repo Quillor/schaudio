@@ -37,6 +37,15 @@ const mediaUrl = (path) => MEDIA_BASE ? `${MEDIA_BASE}/${path}` : path;
 
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
+// Loading a new src resets playbackRate to defaultPlaybackRate, so every
+// paragraph and chapter hop dropped the reader back to 1.0×. Pin both, and
+// re-pin on load, so the chosen speed survives the swap.
+function applySpeed(s = store.speed) {
+  audio.defaultPlaybackRate = s;
+  if (audio.playbackRate !== s) audio.playbackRate = s;
+}
+audio.addEventListener("loadedmetadata", () => applySpeed());
+audio.addEventListener("play", () => applySpeed());
 
 function loadStore() {
   let s = {};
@@ -125,7 +134,7 @@ function alignTokens(text, words) {
 (async function boot() {
   applyTheme(store.theme, false);
   applyAppearance(false);
-  audio.playbackRate = store.speed;
+  applySpeed();
   $("speed").textContent = speedLabel(store.speed);
   initAuth();
 
@@ -516,7 +525,7 @@ function initMediaSession() {
   set("nexttrack", () => {
     const chs = books.get(current).book.chapters;
     const i = chs.findIndex((c) => c.n === bookState(current).chapter);
-    if (i >= 0 && i < chs.length - 1) openBook(current, { chapter: chs[i + 1].n, autoplay: true });
+    if (i >= 0) nextNarratedChapter(i).then((next) => { if (next) startChapter(next.n); });
   });
 }
 
@@ -574,6 +583,7 @@ function seekTo(ms, { autoplay = playing, scroll = "instant" } = {}) {
   if (paraIdx !== p || !audio.src.endsWith(m.paragraphs[p].audio)) {
     paraIdx = p;
     audio.src = mediaUrl(`books/${current}/${m.paragraphs[p].audio}`);
+    applySpeed();
   }
   audio.currentTime = Math.max(0, local);
   syncUI(ms, scroll);
@@ -601,15 +611,34 @@ audio.addEventListener("ended", () => {
     return;
   }
   // Advance to the next NARRATED chapter; bibliography entries are text-only
-  // and would strand autoplay on a silent page.
-  const next = chs.slice(i + 1).find((c) => !c.bib);
-  if (i >= 0 && next) {
-    userScrolledAt = 0;
-    openBook(current, { chapter: next.n, autoplay: true });
-  } else {
-    pause();
-  }
+  // and chapters whose audio hasn't been generated would strand autoplay on a
+  // silent page, so skip past both.
+  if (i >= 0) nextNarratedChapter(i).then((next) => {
+    if (next) startChapter(next.n);
+    else pause();
+  });
+  else pause();
 });
+
+// The next chapter after `i` that has audio for some voice, or null.
+async function nextNarratedChapter(i) {
+  const chs = books.get(current).book.chapters;
+  for (const c of chs.slice(i + 1)) {
+    if (c.bib) continue;
+    for (const v of [store.voice, ...VOICE_OPTIONS.map((o) => o.id)]) {
+      if (await getManifest(current, v, c.n)) return c;
+    }
+  }
+  return null;
+}
+
+// Auto-advance always starts the chapter at the top: resuming a saved position
+// that sits at the very end would end instantly and cascade onward.
+function startChapter(n) {
+  userScrolledAt = 0;
+  chState(current, n).positionMs = 0;
+  openBook(current, { chapter: n, autoplay: true });
+}
 
 function tick() {
   if (!playing) return;
@@ -1283,7 +1312,7 @@ function wireEvents() {
   $("speed").addEventListener("click", () => {
     const next = SPEEDS[(SPEEDS.indexOf(store.speed) + 1) % SPEEDS.length];
     store.speed = next;
-    audio.playbackRate = next;
+    applySpeed(next);
     $("speed").textContent = speedLabel(next);
     save();
   });
@@ -1373,11 +1402,7 @@ function wireEvents() {
     if (e.target.id === "excerptNext") {
       const chs = books.get(current).book.chapters;
       const i = chs.findIndex((c) => c.n === bookState(current).chapter);
-      const nx = chs.slice(i + 1).find((c) => !c.bib);
-      if (i >= 0 && nx) {
-        userScrolledAt = 0;
-        openBook(current, { chapter: nx.n, autoplay: true });
-      }
+      if (i >= 0) nextNarratedChapter(i).then((nx) => { if (nx) startChapter(nx.n); });
       return;
     }
     if (window.getSelection() && !window.getSelection().isCollapsed) return;
