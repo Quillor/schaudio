@@ -1218,3 +1218,15 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
   --surface-page: #f6f0e4;       /* body behind cards; slightly deeper cream */
   --surface-sunken: #efe7d7;
 }
+
+/* Dark mode keeps Flavor's neutral dark surfaces but swaps the blue accent
+   for the leather brand ramp, lifted for contrast against dark backgrounds. */
+:root[data-mode="dark"][data-hue][data-sat][data-bg] {
+  --accent-bg: #b05538;
+  --accent-bg-hover: #c16244;
+  --accent-bg-active: #9c492f;
+  --accent-fg: #fff5ec;
+  --accent-text: #e89a76;
+  --accent-subtle: #3a241b;
+  --focus-ring: #d98a63;
+}

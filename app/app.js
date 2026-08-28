@@ -423,8 +423,9 @@ function renderVoiceSheet() {
 function renderChapters() {
   const { book } = books.get(current);
   const b = bookState(current);
-  const totalCh = book.chapters.length;
-  const startedCh = book.chapters.filter((c) => (b.chapters?.[c.n]?.positionMs || 0) > 1000).length;
+  const realChs = book.chapters.filter((c) => !c.bib);
+  const totalCh = realChs.length;
+  const startedCh = realChs.filter((c) => (b.chapters?.[c.n]?.positionMs || 0) > 1000).length;
 
   for (const host of document.querySelectorAll(".sc-chapters-host")) {
     host.replaceChildren();
@@ -451,8 +452,8 @@ function renderChapters() {
       el.dataset.state = active ? "current" : finished ? "finished" : pos > 1000 ? "started" : "new";
       if (active) el.setAttribute("aria-current", "true");
 
-      const status = active
-        ? `<span class="sc-chapter-badge">Now playing</span>`
+      const status = ch.bib ? "Text only — references"
+        : active ? `<span class="sc-chapter-badge">Now playing</span>`
         : finished ? "Finished"
         : pos > 1000 ? `${pct}% · ${fmt(Math.max(0, estMs - pos))} left`
         : "Not started";
@@ -461,11 +462,11 @@ function renderChapters() {
         <span class="sc-chapter-n">${finished && !active ? '<i class="fa-solid fa-check"></i>' : (ch.label || ch.n)}</span>
         <span class="sc-chapter-meta">
           <span class="sc-chapter-title">${esc(ch.title)}</span>
-          <span class="sc-chapter-sub">${status}${estMs ? `${active ? "" : " · "}${fmt(estMs)}` : ""}</span>
+          <span class="sc-chapter-sub">${status}${estMs && !ch.bib ? `${active ? "" : " · "}${fmt(estMs)}` : ""}</span>
           ${pos > 1000 && !finished
             ? `<span class="sc-chapter-bar"><span style="inline-size:${pct}%"></span></span>` : ""}
         </span>
-        <i class="fa-solid ${active ? "fa-volume-high" : "fa-play"}" aria-hidden="true"></i>`;
+        <i class="fa-solid ${ch.bib ? "fa-book-open" : active ? "fa-volume-high" : "fa-play"}" aria-hidden="true"></i>`;
 
       el.setAttribute("aria-label",
         `Chapter ${ch.label || ch.n}, ${ch.title}, ${active ? "now playing" : finished ? "finished" : pos > 1000 ? pct + " percent listened" : "not started"}`);
@@ -598,9 +599,12 @@ audio.addEventListener("ended", () => {
     $("excerptEnd")?.scrollIntoView({ behavior: REDUCE_MOTION.matches ? "auto" : "smooth", block: "center" });
     return;
   }
-  if (i >= 0 && i < chs.length - 1) {
+  // Advance to the next NARRATED chapter; bibliography entries are text-only
+  // and would strand autoplay on a silent page.
+  const next = chs.slice(i + 1).find((c) => !c.bib);
+  if (i >= 0 && next) {
     userScrolledAt = 0;
-    openBook(current, { chapter: chs[i + 1].n, autoplay: true });
+    openBook(current, { chapter: next.n, autoplay: true });
   } else {
     pause();
   }
@@ -1368,9 +1372,10 @@ function wireEvents() {
     if (e.target.id === "excerptNext") {
       const chs = books.get(current).book.chapters;
       const i = chs.findIndex((c) => c.n === bookState(current).chapter);
-      if (i >= 0 && i < chs.length - 1) {
+      const nx = chs.slice(i + 1).find((c) => !c.bib);
+      if (i >= 0 && nx) {
         userScrolledAt = 0;
-        openBook(current, { chapter: chs[i + 1].n, autoplay: true });
+        openBook(current, { chapter: nx.n, autoplay: true });
       }
       return;
     }
