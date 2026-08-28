@@ -689,10 +689,12 @@ function plPush(pl) {
 
 async function plPull() {
   if (!plCanSync()) return;
-  const [{ data: rows }, { data: memberships }] = await Promise.all([
+  const [rowsRes, memRes] = await Promise.all([
     sb.from("playlists").select("*"),
     sb.from("playlist_members").select("*"),
   ]);
+  if (rowsRes.error) return;     // failed fetch: keep local state untouched
+  const rows = rowsRes.data, memberships = memRes.data;
   if (!rows) return;
   for (const r of rows) {
     const role = r.owner_id === sbUser.id ? "owner" : "member";
@@ -712,11 +714,17 @@ async function plPull() {
   for (const pl of plStore.playlists) {
     if (pl.role === "owner" && !rows.some((r) => r.id === pl.id)) plPush(pl);
   }
-  // drop rows the server no longer returns (deleted elsewhere / removed member)
-  const keep = new Set(rows.map((r) => r.id));
-  plStore.playlists = plStore.playlists.filter(
-    (pl) => pl.role === "guest" || keep.has(pl.id) || (pl.role === "owner" && !pl.ownerId)
-  );
+  // Reconcile deletions ONLY when the server demonstrably answered with the
+  // caller's real data (at least one row came back). An empty response can
+  // also mean an auth hiccup - RLS silently returns [] on a bad token - and
+  // pruning on that wiped every synced playlist locally. Never delete on
+  // empty; a truly deleted playlist disappears on the next healthy pull.
+  if (rows.length > 0) {
+    const keep = new Set(rows.map((r) => r.id));
+    plStore.playlists = plStore.playlists.filter(
+      (pl) => pl.role === "guest" || keep.has(pl.id) || (pl.role === "owner" && !pl.ownerId)
+    );
+  }
   plSave();
   if (document.body.dataset.view === "playlist") renderPlaylistDetail();
   else if (!$("homePlaylistsPane").hidden) renderPlaylists();
