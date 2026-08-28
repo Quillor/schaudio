@@ -155,6 +155,7 @@ function alignTokens(text, words) {
   renderCategories();
   wireEvents();
   initMediaSession();
+  if (typeof plBoot === "function") plBoot();
 })();
 
 /* ---------------- navigation ---------------- */
@@ -163,13 +164,16 @@ function showHome() {
   pause();
   document.body.dataset.view = "home";
   $("viewReader").hidden = true;
+  const vp = $("viewPlaylist"); if (vp) vp.hidden = true;
   $("viewHome").hidden = false;
   renderHome();
 }
 
 function showReader(slug, opts = {}) {
+  if (!opts.fromPlaylist && typeof clearQueue === "function") clearQueue();
   document.body.dataset.view = "reader";
   $("viewHome").hidden = true;
+  const vp = $("viewPlaylist"); if (vp) vp.hidden = true;
   $("viewReader").hidden = false;
   openBook(slug, opts);
 }
@@ -224,6 +228,12 @@ function openWithZoom(slug, coverEl, opts = {}) {
 }
 
 function closeWithZoom() {
+  if (typeof playQueue !== "undefined" && playQueue) {
+    pause();
+    closeSheets();
+    showPlaylist(playQueue.playlistId);
+    return;
+  }
   const slug = current;
   pause();
   closeSheets();
@@ -319,7 +329,7 @@ const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">"
 
 /* ---------------- open & render a book ---------------- */
 
-async function openBook(slug, { autoplay = false, chapter = null } = {}) {
+async function openBook(slug, { autoplay = false, chapter = null , fromPlaylist = false } = {}) {
   current = slug;
   store.lastBook = slug;
   const entry = books.get(slug);
@@ -340,6 +350,10 @@ async function openBook(slug, { autoplay = false, chapter = null } = {}) {
   entry.manifest = manifest;
 
   bookState(slug).lastPlayedAt = Date.now();
+  if (typeof playQueue !== "undefined" && playQueue && !fromPlaylist) {
+    const it = playQueue.items[playQueue.idx];
+    if (!it || it.slug !== slug || it.n !== (chapter ?? bookState(slug).chapter)) clearQueue();
+  }
   $("bookTitle").textContent = entry.book.title;
   $("bookAuthor").textContent = entry.book.author ? `by ${entry.book.author}` : "";
   $("bookChapter").textContent = ch.title;
@@ -564,12 +578,15 @@ function initMediaSession() {
   set("seekforward", (d) => seekTo(globalMs() + (d?.seekOffset || 15) * 1000));
   set("seekto", (d) => { if (d?.seekTime != null) seekTo(d.seekTime * 1000); });
   set("previoustrack", () => {
+    if (globalMs() > 5000) return seekTo(0);
+    if (typeof playQueue !== "undefined" && playQueue) return queueAdvance(-1);
     const chs = books.get(current).book.chapters;
     const i = chs.findIndex((c) => c.n === bookState(current).chapter);
-    if (globalMs() > 5000 || i <= 0) seekTo(0);
+    if (i <= 0) seekTo(0);
     else openBook(current, { chapter: chs[i - 1].n, autoplay: true });
   });
   set("nexttrack", () => {
+    if (typeof playQueue !== "undefined" && playQueue) return queueAdvance(1);
     const chs = books.get(current).book.chapters;
     const i = chs.findIndex((c) => c.n === bookState(current).chapter);
     if (i >= 0) nextNarratedChapter(i).then((next) => { if (next) startChapter(next.n); });
@@ -657,6 +674,8 @@ audio.addEventListener("ended", () => {
     $("excerptEnd")?.scrollIntoView({ behavior: REDUCE_MOTION.matches ? "auto" : "smooth", block: "center" });
     return;
   }
+  // Playlist mode: the queue, not the book, decides what comes next.
+  if (typeof playQueue !== "undefined" && playQueue) { queueAdvance(1, { auto: true }); return; }
   // Advance to the next NARRATED chapter; bibliography entries are text-only
   // and chapters whose audio hasn't been generated would strand autoplay on a
   // silent page, so skip past both.
@@ -1137,7 +1156,16 @@ function loadGis() {
   });
 }
 
+// iOS home-screen web apps (standalone display mode) cannot complete the GIS
+// popup flow: window.open lands in an in-app browser sheet and the session is
+// established THERE, leaving the user stranded outside the app. A same-window
+// full-page redirect survives inside the standalone webview, so use it
+// directly and never let GIS attempt a popup.
+const IS_STANDALONE = matchMedia("(display-mode: standalone)").matches
+  || navigator.standalone === true;
+
 async function startGoogleSignIn(btn) {
+  if (IS_STANDALONE) return redirectSignIn();
   if (!googleClient || !window.isSecureContext) return redirectSignIn();
   btn.disabled = true;
   try {
@@ -1453,6 +1481,7 @@ function wireEvents() {
   // text interactions
   $("page").addEventListener("click", (e) => {
     if (e.target.id === "excerptNext") {
+      if (typeof playQueue !== "undefined" && playQueue) return queueAdvance(1, { auto: true });
       const chs = books.get(current).book.chapters;
       const i = chs.findIndex((c) => c.n === bookState(current).chapter);
       if (i >= 0) nextNarratedChapter(i).then((nx) => { if (nx) startChapter(nx.n); });

@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="../vendor/fontawesome/css/solid.min.css">
 <link rel="stylesheet" href="../vendor/fontawesome/css/light.min.css">
 <link rel="stylesheet" href="../vendor/fontawesome/css/brands.min.css">
-<link rel="stylesheet" href="app.css?v=97c9b2a9f7">
+<link rel="stylesheet" href="app.css?v=df16551f35">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
@@ -58,7 +58,12 @@
     <span id="authSlot"></span>
   </header>
 
+  <nav class="sc-toptabs" role="tablist" aria-label="Library sections">
+    <button class="sc-toptab" role="tab" data-toptab="books" aria-selected="true">Books</button>
+    <button class="sc-toptab" role="tab" data-toptab="playlists" aria-selected="false">Playlists</button>
+  </nav>
   <main class="sc-home-main">
+   <div id="homeBooksPane">
     <section id="continueCard" hidden>
       <h2 class="sc-home-heading">Continue listening</h2>
       <button class="sc-continue" id="continueBtn">
@@ -85,6 +90,17 @@
       </select>
     </div>
     <div class="sc-grid" id="bookGrid"></div>
+   </div>
+
+   <div id="homePlaylistsPane" hidden>
+    <div class="sc-library-head">
+      <h2 class="sc-home-heading">Your playlists</h2>
+      <button class="fds-button" data-variant="primary" id="plNew">
+        <i class="fa-regular fa-plus" aria-hidden="true"></i> New playlist
+      </button>
+    </div>
+    <div id="playlistList"></div>
+   </div>
   </main>
 </div>
 
@@ -92,6 +108,7 @@
 <div class="sc-reader" id="viewReader" hidden>
   <header class="sc-appbar">
     <span class="sc-reader-head">
+      <span class="sc-reader-eyebrow" id="plContext" hidden></span>
       <span class="sc-reader-title" id="bookTitle"></span>
       <span class="sc-reader-author" id="bookAuthor"></span>
       <span class="sc-reader-chapter" id="bookChapter"></span>
@@ -179,6 +196,36 @@
 </div>
 
 <!-- scrim behind sheets/modals -->
+<!-- ===================== PLAYLIST DETAIL ===================== -->
+<div class="sc-playlist" id="viewPlaylist" hidden>
+  <header class="sc-appbar">
+    <button class="fds-button" data-variant="ghost" id="plBack" aria-label="Back to playlists">
+      <i class="fa-regular fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <span class="sc-reader-head">
+      <span class="sc-reader-title" id="plDetailTitle"></span>
+      <span class="sc-reader-chapter" id="plDetailSub"></span>
+    </span>
+    <span class="sc-appbar-spacer"></span>
+    <button class="fds-button" data-variant="ghost" id="plEdit" aria-label="Edit playlist">
+      <i class="fa-regular fa-pen" aria-hidden="true"></i>
+    </button>
+    <button class="fds-button" data-variant="ghost" id="plDeleteBtn" aria-label="Delete playlist">
+      <i class="fa-regular fa-trash" aria-hidden="true"></i>
+    </button>
+  </header>
+  <main class="sc-pl-main">
+    <p class="sc-pl-detail-desc" id="plDetailDesc" hidden></p>
+    <button class="fds-button sc-pl-play" data-variant="primary" id="plPlay" hidden>
+      <i class="fa-solid fa-play" aria-hidden="true"></i> <span>Play</span>
+    </button>
+    <div id="plItems"></div>
+    <button class="fds-button sc-pl-add" data-variant="secondary" id="plAddChapter">
+      <i class="fa-regular fa-plus" aria-hidden="true"></i> Add Chapter
+    </button>
+  </main>
+</div>
+
 <div class="sc-scrim" id="scrim" hidden></div>
 
 <!-- notes sheet -->
@@ -303,7 +350,64 @@
   </div>
 </dialog>
 
+<!-- playlist create/edit -->
+<dialog class="fds-dialog" id="plDialog">
+  <h2 class="fds-dialog-title" id="plDialogHeading">New playlist</h2>
+  <label class="fds-field">
+    <span class="fds-label">Title</span>
+    <input class="fds-input" id="plTitle" maxlength="60" placeholder="Exam prep mix">
+    <span class="sc-char-count" id="plTitleCount">0/60</span>
+  </label>
+  <label class="fds-field">
+    <span class="fds-label">Description <span class="sc-optional">(optional)</span></span>
+    <textarea class="fds-input sc-pl-desc-input" id="plDesc" maxlength="240" rows="3" placeholder="What this playlist is for"></textarea>
+    <span class="sc-char-count" id="plDescCount">0/240</span>
+  </label>
+  <div class="fds-dialog-actions">
+    <button class="fds-button" data-variant="ghost" id="plDialogCancel">Cancel</button>
+    <button class="fds-button" data-variant="primary" id="plDialogSave">Save</button>
+  </div>
+</dialog>
+
+<!-- playlist delete confirm -->
+<dialog class="fds-dialog" id="plDeleteDialog">
+  <h2 class="fds-dialog-title">Delete playlist?</h2>
+  <p>Delete "<span id="plDeleteName"></span>"? This removes the playlist — not your books, notes or progress.</p>
+  <div class="fds-dialog-actions">
+    <button class="fds-button" data-variant="ghost" id="plDeleteCancel">Cancel</button>
+    <button class="fds-button" data-variant="danger" id="plDeleteConfirm">Delete</button>
+  </div>
+</dialog>
+
+<!-- add chapter: three-step modal -->
+<dialog class="fds-dialog sc-add-dialog" id="addChapterDialog" data-step="books">
+  <div class="sc-add-step" data-for="books">
+    <header class="sc-add-head">
+      <h2 class="fds-dialog-title">Add Book To Playlist</h2>
+      <button class="fds-button" data-variant="ghost" id="addClose1" aria-label="Close"><i class="fa-regular fa-xmark" aria-hidden="true"></i></button>
+    </header>
+    <div class="sc-add-scroll" id="addBookList"></div>
+  </div>
+  <div class="sc-add-step" data-for="chapters">
+    <header class="sc-add-head">
+      <button class="fds-button" data-variant="ghost" id="addBackToBooks" aria-label="Back to books"><i class="fa-regular fa-chevron-left" aria-hidden="true"></i></button>
+      <h2 class="fds-dialog-title" id="addChaptersBook"></h2>
+      <button class="fds-button" data-variant="ghost" id="addClose2" aria-label="Close"><i class="fa-regular fa-xmark" aria-hidden="true"></i></button>
+    </header>
+    <div class="sc-add-scroll" id="addChapterList"></div>
+  </div>
+  <div class="sc-add-step" data-for="preview">
+    <header class="sc-add-head">
+      <button class="fds-button" data-variant="ghost" id="chapterPreviewBack" aria-label="Back to chapters"><i class="fa-regular fa-chevron-left" aria-hidden="true"></i></button>
+      <h2 class="fds-dialog-title" id="chapterPreviewTitle"></h2>
+      <button class="fds-button" data-variant="primary" id="chapterPreviewAdd">Add to playlist</button>
+    </header>
+    <div class="sc-add-scroll sc-chapter-preview-text" id="chapterPreviewText"></div>
+  </div>
+</dialog>
+
 <audio id="audio" preload="auto"></audio>
-<script src="app.js?v=6e51dfd49e"></script>
+<script src="app.js?v=fa3ce30093"></script>
+<script src="playlists.js?v=5c718edfb5"></script>
 </body>
 </html>
