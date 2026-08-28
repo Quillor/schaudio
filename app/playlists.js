@@ -17,7 +17,9 @@ const plStore = (() => {
 })();
 
 function plSave() {
-  localStorage.setItem(PL_KEY, JSON.stringify(plStore));
+  localStorage.setItem(PL_KEY, JSON.stringify({
+    playlists: plStore.playlists.filter((p) => p.role !== "guest"),
+  }));
 }
 
 const plById = (id) => plStore.playlists.find((p) => p.id === id);
@@ -36,6 +38,7 @@ function plCreate(title, description) {
   };
   plStore.playlists.push(pl);
   plSave();
+  plPush(pl);
   return pl;
 }
 
@@ -44,16 +47,21 @@ function plUpdate(id, patch) {
   if (!pl) return null;
   Object.assign(pl, patch, { updatedAt: Date.now() });
   plSave();
+  plPush(pl);
   return pl;
 }
 
 function plDelete(id) {
   const i = plStore.playlists.findIndex((p) => p.id === id);
   if (i < 0) return;
+  const pl = plStore.playlists[i];
   plStore.playlists.splice(i, 1);
   delete store.playlistPos[id];
   plSave();
   save();
+  if (plCanSync() && pl.role === "owner") {
+    sb.from("playlists").delete().eq("id", id).then(() => {});
+  }
 }
 
 // Duration estimate for a set of items, same 151-wpm heuristic the chapter
@@ -186,6 +194,14 @@ function showHomeView() {
 function renderPlaylistDetail() {
   const pl = plById(plCurrent);
   if (!pl) return showHomeView();
+  const guest = pl.role === "guest";
+  const canEdit = pl.role === "owner";
+  $("plEdit").hidden = !canEdit;
+  $("plDeleteBtn").hidden = !canEdit;
+  $("plAddChapter").hidden = !canEdit;
+  $("plShareBtn").hidden = guest || IS_DEV;
+  $("plNotesBtn").hidden = guest ? !(pl.shareNotes && Object.keys(pl.noteCounts || {}).length) : IS_DEV;
+  $("guestBanner").hidden = !guest || sessionStorage.getItem("sc-guest-banner") === "off";
   $("plDetailTitle").textContent = pl.title;
   $("plDetailDesc").textContent = pl.description;
   $("plDetailDesc").hidden = !pl.description;
@@ -238,6 +254,13 @@ function renderPlaylistDetail() {
         </button>
         <span class="sc-pl-remove" role="button" tabindex="0" aria-label="Remove ${esc(ch.title)}"><i class="fa-regular fa-xmark" aria-hidden="true"></i></span>`;
       row.querySelector(".sc-pl-item-main").addEventListener("click", () => playPlaylistItem(pl.id, i, { autoplay: true }));
+    }
+    if (pl.role !== "owner") {
+      // members and guests play, but cannot reorder or remove
+      row.querySelector(".sc-pl-grip")?.remove();
+      row.querySelector(".sc-pl-remove")?.remove();
+      host.appendChild(row);
+      return;
     }
     const rm = row.querySelector(".sc-pl-remove");
     const doRemove = (e) => {
@@ -546,11 +569,6 @@ function route() {
   if (document.body.dataset.view === "playlist") { showHome(); selectTopTab("books", { setHash: false }); }
 }
 
-function openSharedLink(token) {
-  // Phase 3 wires this to Supabase; until then, degrade gracefully.
-  selectTopTab("playlists");
-}
-
 function plBoot() {
   // tabs
   for (const b of document.querySelectorAll(".sc-toptab")) {
@@ -581,6 +599,330 @@ function plBoot() {
   });
   $("addChapterDialog").addEventListener("close", () => { stopPreview(); if (document.body.dataset.view === "playlist") renderPlaylistDetail(); });
 
+  // phase 3: share, notes, guest controls
+  $("plShareBtn").addEventListener("click", openShareDialog);
+  $("plNotesBtn").addEventListener("click", openNotesDialog);
+  $("shareDone").addEventListener("click", () => $("plShareDialog").close());
+  $("shareEnable").addEventListener("change", async (e) => {
+    const pl = plById(plCurrent);
+    if (e.target.checked) {
+      const { data: tok, error } = await sb.rpc("share_playlist", { pl: pl.id });
+      if (!error) { pl.shareToken = tok; plSave(); renderShareLink(pl); }
+      else e.target.checked = false;
+    } else {
+      await sb.rpc("unshare_playlist", { pl: pl.id });
+      pl.shareToken = null; plSave(); renderShareLink(pl);
+    }
+  });
+  $("shareNotesToggle").addEventListener("change", (e) => {
+    plUpdate(plCurrent, { shareNotes: e.target.checked });
+  });
+  $("shareCopy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText($("shareLink").value); $("shareCopy").textContent = "Copied"; }
+    catch { $("shareLink").select(); }
+    setTimeout(() => { $("shareCopy").textContent = "Copy"; }, 1500);
+  });
+  $("shareMyNotes").addEventListener("change", async (e) => {
+    await sb.from("playlist_members").update({ share_my_notes: e.target.checked })
+      .eq("playlist_id", plCurrent).eq("user_id", sbUser.id);
+  });
+  $("leavePlaylist").addEventListener("click", async () => {
+    await sb.from("playlist_members").delete()
+      .eq("playlist_id", plCurrent).eq("user_id", sbUser.id);
+    $("plShareDialog").close();
+    plStore.playlists = plStore.playlists.filter((p) => p.id !== plCurrent);
+    plSave();
+    showHomeView();
+  });
+  $("plNotesClose").addEventListener("click", () => $("plNotesDialog").close());
+  $("noteFilterPerson").addEventListener("change", renderPlaylistNotes);
+  $("noteFilterBook").addEventListener("change", renderPlaylistNotes);
+  $("notePromoCancel").addEventListener("click", () => $("notePromoDialog").close());
+  $("notePromoSignIn").addEventListener("click", () => {
+    $("notePromoDialog").close();
+    document.getElementById("signIn")?.click() || startGoogleSignIn($("notePromoSignIn"));
+  });
+  $("guestSignIn").addEventListener("click", (e) => startGoogleSignIn(e.currentTarget));
+  $("guestDismiss").addEventListener("click", () => {
+    sessionStorage.setItem("sc-guest-banner", "off");
+    $("guestBanner").hidden = true;
+  });
+
   addEventListener("hashchange", route);
   route();
 }
+
+/* ================= Phase 3: sharing, sync, guests ================= */
+
+const plCanSync = () => typeof sb !== "undefined" && sb && typeof sbUser !== "undefined" && sbUser && !IS_DEV;
+
+let plPushTimers = {};
+function plPush(pl) {
+  if (!plCanSync() || !pl || pl.role !== "owner") return;
+  clearTimeout(plPushTimers[pl.id]);
+  plPushTimers[pl.id] = setTimeout(async () => {
+    await sb.from("playlists").upsert({
+      id: pl.id,
+      owner_id: sbUser.id,
+      title: pl.title,
+      description: pl.description,
+      items: pl.items,
+      share_notes: pl.shareNotes,
+      updated_at: new Date().toISOString(),
+    });
+  }, 500);
+}
+
+async function plPull() {
+  if (!plCanSync()) return;
+  const [{ data: rows }, { data: memberships }] = await Promise.all([
+    sb.from("playlists").select("*"),
+    sb.from("playlist_members").select("*"),
+  ]);
+  if (!rows) return;
+  for (const r of rows) {
+    const role = r.owner_id === sbUser.id ? "owner" : "member";
+    const local = plById(r.id);
+    const incoming = {
+      id: r.id, title: r.title, description: r.description,
+      items: r.items || [], ownerId: r.owner_id,
+      shareToken: r.share_token, shareNotes: r.share_notes,
+      role, updatedAt: new Date(r.updated_at).getTime(),
+      members: (memberships || []).filter((m) => m.playlist_id === r.id),
+    };
+    if (!local) plStore.playlists.push(incoming);
+    else if (role !== "owner" || incoming.updatedAt >= local.updatedAt) Object.assign(local, incoming);
+    else plPush(local); // local owner edits are newer: push up
+  }
+  // locally-created, never-synced playlists: push them up now
+  for (const pl of plStore.playlists) {
+    if (pl.role === "owner" && !rows.some((r) => r.id === pl.id)) plPush(pl);
+  }
+  // drop rows the server no longer returns (deleted elsewhere / removed member)
+  const keep = new Set(rows.map((r) => r.id));
+  plStore.playlists = plStore.playlists.filter(
+    (pl) => pl.role === "guest" || keep.has(pl.id) || (pl.role === "owner" && !pl.ownerId)
+  );
+  plSave();
+  if (document.body.dataset.view === "playlist") renderPlaylistDetail();
+  else if (!$("homePlaylistsPane").hidden) renderPlaylists();
+}
+
+function plOnAuthReady() {
+  plPull();
+  const h = location.hash;
+  if (h.startsWith("#/pl/")) openSharedLink(h.slice(5));
+}
+
+/* ---------------- share sheet ---------------- */
+
+async function openShareDialog() {
+  const pl = plById(plCurrent);
+  if (!pl || !plCanSync()) return;
+  const dlg = $("plShareDialog");
+  const isOwner = pl.role === "owner";
+  $("shareOwnerPane").hidden = !isOwner;
+  $("shareMemberPane").hidden = isOwner;
+
+  if (isOwner) {
+    $("shareEnable").checked = !!pl.shareToken;
+    $("shareNotesToggle").checked = !!pl.shareNotes;
+    renderShareLink(pl);
+    renderMembers(pl);
+  } else {
+    const me = (pl.members || []).find((m) => m.user_id === sbUser.id);
+    $("shareMyNotes").checked = me ? !!me.share_my_notes : true;
+  }
+  dlg.showModal();
+}
+
+function renderShareLink(pl) {
+  const row = $("shareLinkRow");
+  row.hidden = !pl.shareToken;
+  if (pl.shareToken) {
+    $("shareLink").value = `${location.origin}${location.pathname}#/pl/${pl.shareToken}`;
+  }
+}
+
+function renderMembers(pl) {
+  const host = $("shareMembers");
+  host.replaceChildren();
+  const others = (pl.members || []).filter((m) => m.user_id !== sbUser.id);
+  $("shareMembersHead").hidden = !others.length;
+  for (const m of others) {
+    const row = document.createElement("div");
+    row.className = "sc-member-row";
+    row.innerHTML = `
+      <span class="sc-member-name">${esc(m.display_name || "Member")}</span>
+      <button class="fds-button" data-variant="ghost" aria-label="Remove member">Remove</button>`;
+    row.querySelector("button").addEventListener("click", async () => {
+      await sb.from("playlist_members").delete()
+        .eq("playlist_id", pl.id).eq("user_id", m.user_id);
+      pl.members = pl.members.filter((x) => x.user_id !== m.user_id);
+      renderMembers(pl);
+    });
+    host.appendChild(row);
+  }
+}
+
+/* ---------------- shared notes panel ---------------- */
+
+let plNotesCache = [];
+
+async function openNotesDialog() {
+  const pl = plById(plCurrent);
+  if (!pl) return;
+  if (pl.role === "guest") return renderGuestNotes(pl);
+  if (!plCanSync()) return;
+  const { data } = await sb.from("playlist_notes").select("*").eq("playlist_id", pl.id);
+  plNotesCache = data || [];
+  // filters
+  const people = $("noteFilterPerson");
+  people.replaceChildren(new Option("Everyone", ""));
+  const names = new Map();
+  for (const m of pl.members || []) names.set(m.user_id, m.display_name || "Member");
+  names.set(sbUser.id, "You");
+  for (const [uid, name] of names) people.appendChild(new Option(name, uid));
+  const booksSel = $("noteFilterBook");
+  booksSel.replaceChildren(new Option("All books", ""));
+  for (const slug of [...new Set(plNotesCache.map((n) => n.slug))]) {
+    booksSel.appendChild(new Option(books.get(slug)?.book.title || slug, slug));
+  }
+  renderPlaylistNotes();
+  $("plNotesDialog").showModal();
+}
+
+function renderPlaylistNotes() {
+  const pl = plById(plCurrent);
+  const person = $("noteFilterPerson").value;
+  const bookF = $("noteFilterBook").value;
+  const host = $("plNotesList");
+  host.replaceChildren();
+  const rows = plNotesCache
+    .filter((n) => !person || n.user_id === person)
+    .filter((n) => !bookF || n.slug === bookF)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  if (!rows.length) {
+    host.innerHTML = `<p class="sc-pl-empty-sub" style="text-align:center; padding: 24px 0">No shared notes yet.</p>`;
+    return;
+  }
+  const names = new Map((pl.members || []).map((m) => [m.user_id, m.display_name || "Member"]));
+  for (const n of rows) {
+    const row = document.createElement("div");
+    row.className = "sc-plnote";
+    const who = n.user_id === sbUser?.id ? "You" : (names.get(n.user_id) || "Member");
+    row.innerHTML = `
+      <span class="sc-plnote-head">
+        <span class="sc-plnote-who">${esc(who)}</span>
+        <span class="sc-plnote-where">${esc(books.get(n.slug)?.book.title || n.slug)} · ch. ${n.chapter}</span>
+      </span>
+      <blockquote class="sc-plnote-quote" data-color="${esc(n.cat_color)}">${esc(n.quote)}</blockquote>
+      ${n.note ? `<p class="sc-plnote-note">${esc(n.note)}</p>` : ""}`;
+    host.appendChild(row);
+  }
+}
+
+// Guests: fabricated, blurred rows only — real content never reached the client.
+const FAKE_NOTES = [
+  "The relationship between the reader and the text is itself a kind of dialogue that unfolds over time",
+  "This connects to what we covered earlier about the working alliance and its role in outcomes",
+  "Worth revisiting before the exam — the distinction here is subtle but it matters",
+  "Compare this with the framing in the other chapter; the two authors disagree productively",
+  "A good example of theory meeting practice in a way that changes how you listen",
+];
+
+function renderGuestNotes(pl) {
+  const host = $("plNotesList");
+  host.replaceChildren();
+  $("noteFilterPerson").parentElement.hidden = true;
+  let total = 0;
+  for (const [key, count] of Object.entries(pl.noteCounts || {})) {
+    const [slug, n] = key.split(":");
+    for (let i = 0; i < count; i++) {
+      total++;
+      const row = document.createElement("div");
+      row.className = "sc-plnote sc-plnote-locked";
+      row.setAttribute("role", "button");
+      row.setAttribute("tabindex", "0");
+      row.innerHTML = `
+        <span class="sc-plnote-head">
+          <span class="sc-plnote-who sc-blur">Member</span>
+          <span class="sc-plnote-where">${esc(books.get(slug)?.book.title || slug)} · ch. ${n}</span>
+        </span>
+        <blockquote class="sc-plnote-quote sc-blur">${esc(FAKE_NOTES[total % FAKE_NOTES.length])}</blockquote>
+        <span class="sc-plnote-lock"><i class="fa-solid fa-lock" aria-hidden="true"></i> Shared note</span>`;
+      row.addEventListener("click", showNotePromo);
+      host.appendChild(row);
+    }
+  }
+  if (!total) {
+    host.innerHTML = `<p class="sc-pl-empty-sub" style="text-align:center; padding: 24px 0">No shared notes yet.</p>`;
+  }
+  $("plNotesDialog").showModal();
+}
+
+function showNotePromo() {
+  $("plNotesDialog").close();
+  $("notePromoDialog").showModal();
+}
+
+/* ---------------- note dual-write hooks (called from app.js) ---------------- */
+
+function plNoteWritten(h) {
+  if (!playQueue || !plCanSync()) return;
+  const pl = plById(playQueue.playlistId);
+  if (!pl || !pl.shareToken) return;
+  const cat = store.categories.find((c) => c.id === h.catId);
+  sb.from("playlist_notes").insert({
+    playlist_id: pl.id,
+    user_id: sbUser.id,
+    client_id: h.id,
+    slug: current,
+    chapter: bookState(current).chapter,
+    p: h.p, w0: h.w0, w1: h.w1,
+    cat_name: cat?.name || "",
+    cat_color: cat?.color || "accent",
+    quote: h.quote,
+    note: h.note || "",
+  }).then(({ error }) => {
+    if (error) console.warn("playlist note not shared:", error.message);
+  });
+}
+
+function plNoteRemoved(id) {
+  if (!plCanSync()) return;
+  sb.from("playlist_notes").delete().eq("client_id", id).eq("user_id", sbUser.id).then(() => {});
+}
+
+/* ---------------- guest deep link ---------------- */
+
+let plPendingToken = null;
+
+async function openSharedLink(token) {
+  if (IS_DEV) { selectTopTab("playlists"); return; }
+  if (typeof sb === "undefined" || !sb) { plPendingToken = token; return; }
+  if (typeof sbUser !== "undefined" && sbUser) {
+    // signed in: prove the token, become a member
+    const { data: plId, error } = await sb.rpc("join_playlist", { tok: token });
+    if (error) { selectTopTab("playlists"); return; }
+    await plPull();
+    return showPlaylist(plId);
+  }
+  // guest: listen-safe payload only
+  const { data, error } = await sb.rpc("get_shared_playlist", { tok: token });
+  if (error || !data) { selectTopTab("playlists"); return; }
+  const existing = plById(data.id);
+  if (existing) Object.assign(existing, { role: "guest" });
+  else plStore.playlists.push({
+    id: data.id, title: data.title, description: data.description,
+    items: data.items || [], ownerId: null, shareToken: token,
+    shareNotes: data.share_notes, noteCounts: data.note_counts || {},
+    role: "guest", updatedAt: Date.now(),
+  });
+  showPlaylist(data.id);
+}
+
+const plIsGuest = () => {
+  const pl = plCurrent && plById(plCurrent);
+  return !!(pl && pl.role === "guest") || (!!playQueue && plById(playQueue.playlistId)?.role === "guest");
+};

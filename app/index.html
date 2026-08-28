@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="../vendor/fontawesome/css/solid.min.css">
 <link rel="stylesheet" href="../vendor/fontawesome/css/light.min.css">
 <link rel="stylesheet" href="../vendor/fontawesome/css/brands.min.css">
-<link rel="stylesheet" href="app.css?v=df16551f35">
+<link rel="stylesheet" href="app.css?v=b36546d744">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
@@ -207,6 +207,12 @@
       <span class="sc-reader-chapter" id="plDetailSub"></span>
     </span>
     <span class="sc-appbar-spacer"></span>
+    <button class="fds-button" data-variant="ghost" id="plNotesBtn" aria-label="Playlist notes">
+      <i class="fa-regular fa-notes" aria-hidden="true"></i>
+    </button>
+    <button class="fds-button" data-variant="ghost" id="plShareBtn" aria-label="Share playlist">
+      <i class="fa-regular fa-arrow-up-from-bracket" aria-hidden="true"></i>
+    </button>
     <button class="fds-button" data-variant="ghost" id="plEdit" aria-label="Edit playlist">
       <i class="fa-regular fa-pen" aria-hidden="true"></i>
     </button>
@@ -214,6 +220,11 @@
       <i class="fa-regular fa-trash" aria-hidden="true"></i>
     </button>
   </header>
+  <div class="sc-guest-banner" id="guestBanner" hidden>
+    <span>You're listening to a shared playlist — sign in to save progress and see shared notes.</span>
+    <button class="fds-button" data-variant="primary" id="guestSignIn">Sign in</button>
+    <button class="sc-guest-dismiss" id="guestDismiss" aria-label="Dismiss"><i class="fa-regular fa-xmark" aria-hidden="true"></i></button>
+  </div>
   <main class="sc-pl-main">
     <p class="sc-pl-detail-desc" id="plDetailDesc" hidden></p>
     <button class="fds-button sc-pl-play" data-variant="primary" id="plPlay" hidden>
@@ -406,8 +417,64 @@
   </div>
 </dialog>
 
+<!-- share settings -->
+<dialog class="fds-dialog" id="plShareDialog">
+  <h2 class="fds-dialog-title">Share playlist</h2>
+  <div id="shareOwnerPane">
+    <label class="sc-share-row">
+      <span>Share with a link</span>
+      <input type="checkbox" class="fds-switch" id="shareEnable">
+    </label>
+    <div class="sc-share-linkrow" id="shareLinkRow" hidden>
+      <input class="fds-input" id="shareLink" readonly>
+      <button class="fds-button" data-variant="secondary" id="shareCopy">Copy</button>
+    </div>
+    <label class="sc-share-row">
+      <span>Share notes<br><small class="sc-share-hint">Members see each other's notes. Bookmarks are never shared.</small></span>
+      <input type="checkbox" class="fds-switch" id="shareNotesToggle">
+    </label>
+    <p class="sc-share-hint" id="shareMembersHead" hidden>Members — removing someone ends their access to this playlist and its notes.</p>
+    <div id="shareMembers"></div>
+  </div>
+  <div id="shareMemberPane" hidden>
+    <label class="sc-share-row">
+      <span>Share my notes in this playlist<br><small class="sc-share-hint">Off keeps your notes visible only to you. Bookmarks are never shared.</small></span>
+      <input type="checkbox" class="fds-switch" id="shareMyNotes">
+    </label>
+    <button class="fds-button" data-variant="ghost" id="leavePlaylist">Leave playlist</button>
+  </div>
+  <div class="fds-dialog-actions">
+    <button class="fds-button" data-variant="primary" id="shareDone">Done</button>
+  </div>
+</dialog>
+
+<!-- playlist notes -->
+<dialog class="fds-dialog sc-add-dialog" id="plNotesDialog">
+  <header class="sc-add-head">
+    <h2 class="fds-dialog-title">Playlist notes</h2>
+    <button class="fds-button" data-variant="ghost" id="plNotesClose" aria-label="Close"><i class="fa-regular fa-xmark" aria-hidden="true"></i></button>
+  </header>
+  <div class="sc-note-filters">
+    <label>Person <select class="fds-select" id="noteFilterPerson"></select></label>
+    <label>Book <select class="fds-select" id="noteFilterBook"></select></label>
+  </div>
+  <div class="sc-add-scroll" id="plNotesList"></div>
+</dialog>
+
+<!-- guest note promo -->
+<dialog class="fds-dialog" id="notePromoDialog">
+  <h2 class="fds-dialog-title">Notes are better together</h2>
+  <p>Members of this playlist share their highlights and notes with each other.
+     Sign in to join, read the group's notes, and add your own — your notes are
+     saved to the playlist and to your own copy of the book.</p>
+  <div class="fds-dialog-actions">
+    <button class="fds-button" data-variant="ghost" id="notePromoCancel">Not now</button>
+    <button class="fds-button" data-variant="primary" id="notePromoSignIn">Sign in</button>
+  </div>
+</dialog>
+
 <audio id="audio" preload="auto"></audio>
-<script src="app.js?v=fa3ce30093"></script>
-<script src="playlists.js?v=5c718edfb5"></script>
+<script src="app.js?v=75936afbab"></script>
+<script src="playlists.js?v=b289761c61"></script>
 </body>
 </html>

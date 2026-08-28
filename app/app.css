@@ -1450,3 +1450,63 @@ body[data-transport="min"] .sc-transport-chapter { display: none; }
 .sc-add-preview[data-key] i { pointer-events: none; }
 .sc-chapter-preview-text { font-family: var(--font-reading, serif); line-height: 1.7; }
 .sc-chapter-preview-text p { margin: 0 0 1em; }
+
+/* ---- sharing, guests, playlist notes ---- */
+.sc-guest-banner {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  font-size: var(--font-size-1);
+  border-block-end: 1px solid var(--border-subtle);
+}
+.sc-guest-banner > span:first-child { flex: 1; }
+.sc-guest-dismiss {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  color: inherit; display: grid; place-items: center;
+  inline-size: 36px; block-size: 36px; flex: none;
+}
+.sc-share-row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--border-subtle);
+}
+.sc-share-hint { color: var(--text-tertiary); font-size: var(--font-size-1); font-weight: 400; }
+.sc-share-linkrow { display: flex; gap: var(--space-2); padding-block: var(--space-3); }
+.sc-share-linkrow .fds-input { flex: 1; min-inline-size: 0; font-size: var(--font-size-1); }
+.sc-member-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-block: var(--space-2);
+  border-block-end: 1px solid var(--border-subtle);
+}
+.sc-note-filters {
+  display: flex; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-block-end: 1px solid var(--border-subtle);
+  font-size: var(--font-size-1); color: var(--text-secondary);
+}
+.sc-note-filters label { display: flex; align-items: center; gap: var(--space-2); }
+.sc-plnote {
+  padding: var(--space-3) 0;
+  border-block-end: 1px solid var(--border-subtle);
+}
+.sc-plnote-head { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--font-size-1); }
+.sc-plnote-who { font-weight: 600; }
+.sc-plnote-where { color: var(--text-tertiary); }
+.sc-plnote-quote {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 3px solid var(--accent-bg);
+  font-family: var(--font-reading, serif);
+  color: var(--text-secondary);
+}
+.sc-plnote-note { margin: var(--space-2) 0 0; }
+/* Guests: fabricated rows, blurred beyond reading; the real content never
+   reached the client, so devtools reveals nothing but the decoys. */
+.sc-plnote-locked { cursor: pointer; position: relative; }
+.sc-blur { filter: blur(5px); user-select: none; pointer-events: none; }
+.sc-plnote-lock {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  margin-block-start: var(--space-2);
+  font-size: var(--font-size-1); font-weight: 600; color: var(--accent-text);
+}

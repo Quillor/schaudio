@@ -861,6 +861,7 @@ function jumpToWord(p, w) {
 }
 
 function removeHighlight(id) {
+  if (typeof plNoteRemoved === "function") plNoteRemoved(id);
   const st = cur();
   st.highlights = st.highlights.filter((h) => h.id !== id);
   save();
@@ -886,6 +887,7 @@ function wordRangeFromSelection() {
 }
 
 function openPopover(rangeInfo, rect) {
+  if (typeof plIsGuest === "function" && plIsGuest()) return showNotePromo();
   pendingSel = rangeInfo;
   popCat = store.categories[0].id;
   renderPopCats();
@@ -925,6 +927,7 @@ function saveHighlight() {
     createdMs: Date.now(),
   });
   save();
+  if (typeof plNoteWritten === "function") plNoteWritten(cur().highlights[cur().highlights.length - 1]);
   closePopover();
   applyHighlights();
   renderNotes();
@@ -1030,6 +1033,7 @@ function renderBookmarks() {
 }
 
 function addBookmark() {
+  if (typeof plIsGuest === "function" && plIsGuest()) return showNotePromo();
   const m = man();
   if (!m) return;
   const ms = globalMs();
@@ -1214,6 +1218,7 @@ const GOOGLE_MARK = `<svg class="sc-gmark" viewBox="0 0 48 48" aria-hidden="true
 
 function handleSession(session) {
   sbUser = session?.user || null;
+  if (typeof plOnAuthReady === "function") plOnAuthReady();
   const slot = $("authSlot");
 
   if (!sbUser) {
