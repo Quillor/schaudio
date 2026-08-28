@@ -452,8 +452,9 @@ function renderChapters() {
       el.dataset.state = active ? "current" : finished ? "finished" : pos > 1000 ? "started" : "new";
       if (active) el.setAttribute("aria-current", "true");
 
+      // The speaker icon already marks the playing row; a badge was redundant.
       const status = ch.bib ? "Text only — references"
-        : active ? `<span class="sc-chapter-badge">Now playing</span>`
+        : active ? ""
         : finished ? "Finished"
         : pos > 1000 ? `${pct}% · ${fmt(Math.max(0, estMs - pos))} left`
         : "Not started";
@@ -462,7 +463,7 @@ function renderChapters() {
         <span class="sc-chapter-n">${finished && !active ? '<i class="fa-solid fa-check"></i>' : (ch.label || ch.n)}</span>
         <span class="sc-chapter-meta">
           <span class="sc-chapter-title">${esc(ch.title)}</span>
-          <span class="sc-chapter-sub">${status}${estMs && !ch.bib ? `${active ? "" : " · "}${fmt(estMs)}` : ""}</span>
+          <span class="sc-chapter-sub">${status}${estMs && !ch.bib ? `${status ? " · " : ""}${fmt(estMs)}` : ""}</span>
           ${pos > 1000 && !finished
             ? `<span class="sc-chapter-bar"><span style="inline-size:${pct}%"></span></span>` : ""}
         </span>

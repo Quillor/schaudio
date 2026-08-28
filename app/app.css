@@ -1230,3 +1230,24 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
   --accent-subtle: #3a241b;
   --focus-ring: #d98a63;
 }
+
+/* Chapter rows, refined: the trailing play glyph is an affordance, not the
+   focal point — idle rows keep it quiet; only the playing row's speaker
+   carries the accent. */
+.sc-chapter i,
+.sc-chapter .fds-icon { color: var(--text-tertiary); }
+.sc-chapter[data-state="current"] i { color: var(--accent-bg); }
+.sc-chapter:hover:not(:disabled) i { color: var(--text-secondary); }
+
+/* The current-row tint should reach the container edges instead of floating
+   inside the host's padding with bare gutters around it. */
+.sc-sheet-body.sc-chapters-host { padding-inline: 0; }
+.sc-sheet-body.sc-chapters-host .sc-chapters-summary,
+.sc-sheet-body.sc-chapters-host .sc-chapter { padding-inline: var(--space-5); }
+@media (min-width: 1200px) {
+  .sc-desk-chapters .sc-chapter {
+    padding-inline: var(--space-4);
+    margin-inline: calc(-1 * var(--space-4));
+    inline-size: calc(100% + 2 * var(--space-4));
+  }
+}
