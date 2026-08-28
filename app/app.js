@@ -74,9 +74,11 @@ function normalizeStore(s) {
   s.appearance ||= { size: 2, font: "serif", space: "regular" };
   s.user ||= null;
   s.voice ||= "sam";
-  s.librarySort ||= "recent";
-  s.pinned ||= [];
-  s.playlistPos ||= {};
+  if (typeof s.librarySort !== "string") s.librarySort = "recent";
+  if (!Array.isArray(s.pinned)) s.pinned = [];
+  if (typeof s.playlistPos !== "object" || s.playlistPos === null || Array.isArray(s.playlistPos)) s.playlistPos = {};
+  if (!Array.isArray(s.categories)) s.categories = [];
+  if (typeof s.books !== "object" || s.books === null) s.books = {};
   return s;
 }
 const save = () => {
@@ -267,7 +269,10 @@ function renderHome() {
     cc.hidden = true;
   }
 
-  // grid
+  // grid — normalize first: a state blob synced from an older app version
+  // may lack fields like `pinned`; throwing here after replaceChildren()
+  // is what an "all my books are gone" screen looks like.
+  normalizeStore(store);
   const grid = $("bookGrid");
   grid.replaceChildren();
   for (const slug of sortedSlugs()) {
@@ -286,7 +291,7 @@ function renderHome() {
       <span class="sc-tile-sub">${esc(book.author)} · ${book.chapters.filter((c) => !c.bib).length} chapters</span>`;
     el.setAttribute("aria-label", `${book.title}, ${started} of ${book.chapters.filter((c) => !c.bib).length} chapters started`);
     el.addEventListener("click", () => openWithZoom(slug, el.querySelector(".sc-tile-cover")));
-    const pinned = store.pinned.includes(slug);
+    const pinned = (store.pinned || []).includes(slug);
     // Tiles are <button>s, so the pin cannot be a nested button.
     const pin = document.createElement("span");
     pin.className = "sc-tile-pin";
@@ -303,7 +308,7 @@ function renderHome() {
     grid.appendChild(el);
   }
   const sortSel = $("librarySort");
-  if (sortSel && sortSel.value !== store.librarySort) sortSel.value = store.librarySort;
+  if (sortSel && sortSel.value !== store.librarySort) sortSel.value = store.librarySort || "recent";
 }
 
 // Pinned books first (in pin order), then the chosen sort.
@@ -312,13 +317,14 @@ function sortedSlugs() {
     recent: (a, b) => (bookState(b).lastPlayedAt || 0) - (bookState(a).lastPlayedAt || 0),
     oldest: (a, b) => (bookState(a).lastPlayedAt || 0) - (bookState(b).lastPlayedAt || 0),
     alpha: (a, b) => books.get(a).book.title.localeCompare(books.get(b).book.title),
-  }[store.librarySort] || (() => 0);
-  const pinned = store.pinned.filter((s) => SLUGS.includes(s));
+  }[store.librarySort || "recent"] || (() => 0);
+  const pinned = (store.pinned || []).filter((s) => SLUGS.includes(s));
   const rest = SLUGS.filter((s) => !pinned.includes(s)).sort(cmp);
   return [...pinned, ...rest];
 }
 
 function togglePin(slug) {
+  store.pinned ||= [];
   const i = store.pinned.indexOf(slug);
   if (i >= 0) store.pinned.splice(i, 1); else store.pinned.push(slug);
   save();
@@ -355,9 +361,11 @@ async function openBook(slug, { autoplay = false, chapter = null , fromPlaylist 
     if (!it || it.slug !== slug || it.n !== (chapter ?? bookState(slug).chapter)) clearQueue();
   }
   $("bookTitle").textContent = entry.book.title;
-  $("bookAuthor").textContent = entry.book.author ? `by ${entry.book.author}` : "";
+  const authorEl = $("bookAuthor");
+  if (authorEl) authorEl.textContent = entry.book.author ? `by ${entry.book.author}` : "";
   $("bookChapter").textContent = ch.title;
-  $("transportChapter").textContent = ch.title;
+  const tcEl = $("transportChapter");
+  if (tcEl) tcEl.textContent = ch.title;
   $("deskCover").src = mediaUrl(`books/${slug}/cover.png`);
   $("deskChapter").textContent = ch.title;
 
@@ -1384,7 +1392,7 @@ function wireEvents() {
     applyTransportMode();
   });
   $("continueBtn").addEventListener("click", () => openWithZoom(store.lastBook, $("continueCover"), { autoplay: true }));
-  $("librarySort").addEventListener("change", (e) => {
+  $("librarySort")?.addEventListener("change", (e) => {
     store.librarySort = e.target.value;
     save();
     renderHome();
