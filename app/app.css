@@ -1626,3 +1626,13 @@ body[data-view="playlist"] #viewReader { display: none; }
   padding: var(--space-2) var(--space-5) 0;
 }
 .sc-add-sortrow .fds-select { max-inline-size: 160px; }
+
+/* Play/Resume: icon and label were cramped edge-to-edge */
+.sc-pl-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-5) var(--space-6);
+}
+.sc-pl-play i { font-size: 14px; }

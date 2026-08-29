@@ -1180,44 +1180,9 @@ const IS_STANDALONE = matchMedia("(display-mode: standalone)").matches
   || navigator.standalone === true;
 
 async function startGoogleSignIn(btn) {
-  if (IS_STANDALONE) return redirectSignIn();
-  if (!googleClient || !window.isSecureContext) return redirectSignIn();
-  btn.disabled = true;
-  try {
-    const ok = await loadGis();
-    if (!ok) return redirectSignIn();
-
-    const nonce = crypto.randomUUID();
-    const hashedNonce = await sha256Hex(nonce);
-    let settled = false;
-
-    google.accounts.id.initialize({
-      client_id: googleClient,
-      nonce: hashedNonce,
-      auto_select: false,
-      cancel_on_tap_outside: true,
-      callback: async (resp) => {
-        settled = true;
-        const { error } = await sb.auth.signInWithIdToken({
-          provider: "google",
-          token: resp.credential,
-          nonce,
-        });
-        if (error) redirectSignIn();
-      },
-    });
-
-    google.accounts.id.prompt((notification) => {
-      // One Tap unavailable (blocked, no session, opted out): use the redirect
-      if (!settled && (notification.isNotDisplayed?.() || notification.isSkippedMoment?.())) {
-        redirectSignIn();
-      }
-    });
-  } catch {
-    redirectSignIn();
-  } finally {
-    setTimeout(() => { btn.disabled = false; }, 1200);
-  }
+  if (btn) btn.disabled = true;
+  try { await redirectSignIn(); }
+  finally { setTimeout(() => { if (btn) btn.disabled = false; }, 3000); }
 }
 
 const GOOGLE_MARK = `<svg class="sc-gmark" viewBox="0 0 48 48" aria-hidden="true">

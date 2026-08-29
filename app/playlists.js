@@ -667,9 +667,9 @@ function plBoot() {
   $("noteFilterPerson").addEventListener("change", renderPlaylistNotes);
   $("noteFilterBook").addEventListener("change", renderPlaylistNotes);
   $("notePromoCancel").addEventListener("click", () => $("notePromoDialog").close());
-  $("notePromoSignIn").addEventListener("click", () => {
+  $("notePromoSignIn").addEventListener("click", (e) => {
     $("notePromoDialog").close();
-    document.getElementById("signIn")?.click() || startGoogleSignIn($("notePromoSignIn"));
+    startGoogleSignIn(e.currentTarget);
   });
   $("guestSignIn").addEventListener("click", (e) => startGoogleSignIn(e.currentTarget));
   $("guestDismiss").addEventListener("click", () => {
