@@ -185,9 +185,18 @@ function renderPlaylists() {
 
 let plCurrent = null; // playlist id shown in #viewPlaylist
 
-function showPlaylist(id) {
+function showPlaylist(id, { retried = false } = {}) {
   const pl = plById(id);
-  if (!pl) { selectTopTab("playlists"); return showHomeView(); }
+  if (!pl) {
+    // At boot the router can win the race against the first server pull;
+    // fetch once before concluding the playlist doesn't exist.
+    if (!retried && plCanSync()) {
+      plPull().then(() => showPlaylist(id, { retried: true }));
+      return;
+    }
+    selectTopTab("playlists");
+    return showHomeView();
+  }
   plCurrent = id;
   pause();
   document.body.dataset.view = "playlist";
@@ -682,7 +691,7 @@ function plPush(pl) {
       description: pl.description,
       items: pl.items,
       share_notes: pl.shareNotes,
-      updated_at: new Date().toISOString(),
+      updated_at: new Date(pl.updatedAt).toISOString(),
     });
   }, 500);
 }
@@ -706,9 +715,11 @@ async function plPull() {
       role, updatedAt: new Date(r.updated_at).getTime(),
       members: (memberships || []).filter((m) => m.playlist_id === r.id),
     };
+    const dirty = !!plPushTimers[r.id];   // an edit is still waiting to upload
     if (!local) plStore.playlists.push(incoming);
-    else if (role !== "owner" || incoming.updatedAt >= local.updatedAt) Object.assign(local, incoming);
-    else plPush(local); // local owner edits are newer: push up
+    else if (role !== "owner") Object.assign(local, incoming);
+    else if (!dirty && incoming.updatedAt > local.updatedAt) Object.assign(local, incoming);
+    else if (incoming.updatedAt < local.updatedAt || dirty) plPush(local); // local wins: push up
   }
   // locally-created, never-synced playlists: push them up now
   for (const pl of plStore.playlists) {
