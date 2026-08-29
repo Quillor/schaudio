@@ -684,7 +684,11 @@ function plPush(pl) {
   if (!plCanSync() || !pl || pl.role !== "owner") return;
   clearTimeout(plPushTimers[pl.id]);
   plPushTimers[pl.id] = setTimeout(async () => {
-    await sb.from("playlists").upsert({
+    delete plPushTimers[pl.id];
+    // NOT upsert: INSERT ... ON CONFLICT trips RLS here (the select policy is
+    // a security-definer membership check, and Postgres requires it for the
+    // conflict arm). Plain update-then-insert passes the same policies fine.
+    const row = {
       id: pl.id,
       owner_id: sbUser.id,
       title: pl.title,
@@ -692,7 +696,16 @@ function plPush(pl) {
       items: pl.items,
       share_notes: pl.shareNotes,
       updated_at: new Date(pl.updatedAt).toISOString(),
-    });
+    };
+    const upd = await sb.from("playlists").update(row).eq("id", pl.id).select("id");
+    if (upd.error) return console.warn("playlist push failed:", upd.error.message);
+    if (!upd.data.length) {
+      const ins = await sb.from("playlists").insert(row);
+      if (ins.error) console.warn("playlist push failed:", ins.error.message);
+      else pl.ownerId = sbUser.id;
+    } else {
+      pl.ownerId = sbUser.id;
+    }
   }, 500);
 }
 

@@ -1517,3 +1517,15 @@ body[data-transport="min"] .sc-transport-chapter { display: none; }
 .fds-button[hidden], #plNew[hidden] { display: none !important; }
 .sc-pl-empty { text-align: center; }
 .sc-pl-empty > i { margin-inline: auto; text-align: center; inline-size: 100%; }
+
+/* View exclusivity, playlist included — and [hidden] must always win.
+   (#viewHome kept display:flex despite the hidden attribute, so the playlist
+   view rendered a full viewport below the fold: "it doesn't work".) */
+#viewHome[hidden], #viewReader[hidden], #viewPlaylist[hidden] { display: none !important; }
+body[data-view="playlist"] #viewHome,
+body[data-view="playlist"] #viewReader { display: none; }
+
+/* The [hidden] attribute must ALWAYS win. Four separate bugs came from
+   component display rules (flex/grid) silently overriding it: .sc-pop,
+   fds-button, #viewHome, .sc-guest-banner. One global rule ends the class. */
+[hidden] { display: none !important; }
