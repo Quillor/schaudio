@@ -127,7 +127,7 @@ create policy "authors delete notes" on public.playlist_notes
   for delete using (auth.uid() = user_id);
 
 create or replace function public.share_playlist(pl uuid)
-returns text language plpgsql security definer set search_path = public as $$
+returns text language plpgsql security definer set search_path = public, extensions as $$
 declare tok text;
 begin
   select share_token into tok from playlists where id = pl and owner_id = auth.uid();

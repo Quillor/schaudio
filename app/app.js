@@ -499,6 +499,9 @@ function renderVoiceSheet() {
 /* ---------------- chapters ---------------- */
 
 function renderChapters() {
+  if (typeof playQueue !== "undefined" && playQueue && typeof plRenderQueueChapters === "function") {
+    return plRenderQueueChapters();
+  }
   const { book } = books.get(current);
   const b = bookState(current);
   const realChs = book.chapters.filter((c) => !c.bib);

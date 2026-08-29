@@ -483,6 +483,7 @@ function setAddStep(step) {
 
 function openAddModal() {
   addModalSlug = null;
+  $("addBookSort").value = store.librarySort || "recent";
   renderAddBooks();
   setAddStep("books");
   $("addChapterDialog").showModal();
@@ -612,6 +613,11 @@ function plBoot() {
 
   // add-chapter modal
   $("addBackToBooks").addEventListener("click", () => setAddStep("books"));
+  $("addBookSort").addEventListener("change", (e) => {
+    store.librarySort = e.target.value;   // same preference the home grid uses
+    save();
+    renderAddBooks();
+  });
   $("addClose1").addEventListener("click", () => { stopPreview(); $("addChapterDialog").close(); renderPlaylistDetail(); });
   $("addClose2").addEventListener("click", () => { stopPreview(); $("addChapterDialog").close(); renderPlaylistDetail(); });
   $("chapterPreviewBack").addEventListener("click", () => { renderAddChapters(); setAddStep("chapters"); });
@@ -973,3 +979,39 @@ const plIsGuest = () => {
   const pl = plCurrent && plById(plCurrent);
   return !!(pl && pl.role === "guest") || (!!playQueue && plById(playQueue.playlistId)?.role === "guest");
 };
+
+
+/* While a playlist is playing, the reader's chapter hosts (desktop sidebar +
+   chapters sheet) show the QUEUE, not the current book's chapters. */
+function plRenderQueueChapters() {
+  const pl = plById(playQueue.playlistId);
+  for (const host of document.querySelectorAll(".sc-chapters-host")) {
+    host.replaceChildren();
+    const summary = document.createElement("p");
+    summary.className = "sc-chapters-summary";
+    summary.textContent = `${esc(pl?.title || "Playlist")} · item ${playQueue.idx + 1} of ${playQueue.items.length}`;
+    host.appendChild(summary);
+    playQueue.items.forEach((item, i) => {
+      const ch = plChapter(item.slug, item.n);
+      if (!ch) return;
+      const book = books.get(item.slug).book;
+      const active = i === playQueue.idx;
+      const el = document.createElement("button");
+      el.className = "sc-chapter";
+      el.dataset.state = active ? "current" : "";
+      if (active) el.setAttribute("aria-current", "true");
+      el.innerHTML = `
+        <span class="sc-chapter-n">${i + 1}</span>
+        <span class="sc-chapter-meta">
+          <span class="sc-pl-item-book">${esc(book.title)}</span>
+          <span class="sc-chapter-title">${esc(ch.title)}</span>
+        </span>
+        <i class="fa-solid ${active ? "fa-volume-high" : "fa-play"}" aria-hidden="true"></i>`;
+      el.addEventListener("click", () => {
+        closeSheets();
+        playPlaylistItem(playQueue.playlistId, i, { autoplay: true });
+      });
+      host.appendChild(el);
+    });
+  }
+}

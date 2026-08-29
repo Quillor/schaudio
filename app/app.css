@@ -1529,3 +1529,100 @@ body[data-view="playlist"] #viewReader { display: none; }
    component display rules (flex/grid) silently overriding it: .sc-pop,
    fds-button, #viewHome, .sc-guest-banner. One global rule ends the class. */
 [hidden] { display: none !important; }
+
+/* ==================== UI quality sweep (2026-08-29) ====================
+   Radius system: one geometric scale, applied by element class —
+   controls/fields 8, media 12, containers 16, dialogs/sheets 20, pills full.
+   Nested corners stay concentric: inner radius = outer radius − gap. */
+:root[data-radius] {
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-control: var(--radius-sm);
+  --radius-field: var(--radius-sm);
+  --radius-media: var(--radius-md);
+  --radius-container: var(--radius-lg);
+}
+.fds-dialog { border-radius: var(--radius-xl); }
+.sc-sheet { border-start-start-radius: var(--radius-xl); border-start-end-radius: var(--radius-xl); }
+.sc-tile-cover, .sc-continue-cover { border-radius: var(--radius-media); }
+.sc-add-cover { border-radius: var(--radius-xs); } /* concentric: sm row − gap */
+.sc-pl-play, .sc-pl-add { border-radius: var(--radius-sm); }
+.fds-input, textarea.fds-input { border-radius: var(--radius-field); }
+
+/* Modals read as paper: white in light mode, one step lighter in dark. */
+:root[data-mode="light"] .fds-dialog { background: #ffffff; }
+:root[data-mode="dark"] .fds-dialog { background: var(--surface-2); }
+
+/* The 'secondary' button variant resolved to brand-hue-tinted neutrals —
+   i.e. blue. Re-base the secondary family onto the warm neutral ramp. */
+:root[data-mode="light"][data-hue][data-sat][data-bg] {
+  --secondary-text: #5c4a38;
+  --secondary-fg: #fff8ef;
+  --secondary-bg: #6b5442;
+  --secondary-bg-hover: #7a6250;
+  --secondary-bg-active: #5c4a38;
+  --secondary-subtle: #efe7d7;
+  --secondary-subtle-hover: #e7dcc8;
+  --secondary-border: #c9b99f;
+  --text-on-accent-subtle: #7a3322;   /* the last blue: secondary buttons */
+  --icon-on-accent-subtle: #8b3d2a;
+  --text-on-accent: #fff8ef;
+  --icon-on-accent: #fff8ef;
+}
+:root[data-mode="dark"][data-hue][data-sat][data-bg] {
+  --secondary-text: #cbb59d;
+  --secondary-fg: #241c15;
+  --secondary-bg: #a08868;
+  --secondary-bg-hover: #ae9678;
+  --secondary-bg-active: #8f7a5e;
+  --secondary-subtle: #32281f;
+  --secondary-subtle-hover: #3d3126;
+  --secondary-border: #5c4a38;
+  --text-on-accent-subtle: #e89a76;
+  --icon-on-accent-subtle: #d98a63;
+  --text-on-accent: #fff5ec;
+  --icon-on-accent: #fff5ec;
+}
+
+/* Spacing & typography rhythm */
+.sc-pl-main { padding-block-start: var(--space-5); }
+.sc-pl-detail-desc { margin-block-end: var(--space-5); max-inline-size: 60ch; }
+.sc-pl-play { margin-block-end: var(--space-5); padding-inline: var(--space-6); min-block-size: 44px; }
+.sc-pl-item .sc-chapter-meta { padding-block: var(--space-1); gap: 2px; }
+.sc-pl-item-book { letter-spacing: .01em; }
+.sc-add-head { padding: var(--space-4) var(--space-5); }
+.sc-add-scroll { padding: var(--space-3) var(--space-5) var(--space-5); }
+.sc-add-chapter { padding-block: var(--space-3); gap: var(--space-2); }
+.sc-add-book { padding: var(--space-3); border-radius: var(--radius-sm); border-block-end: 0; margin-block-end: var(--space-1); }
+.sc-add-book:hover { background: var(--surface-2); }
+.fds-dialog .fds-field { margin-block-end: var(--space-4); }
+.fds-dialog-actions { margin-block-start: var(--space-5); gap: var(--space-2); }
+.sc-library-head { margin-block-end: var(--space-4); }
+.sc-toptabs { padding-inline: var(--space-6); }
+.sc-pl-empty { padding-block: var(--space-8, 56px); }
+
+/* Desktop transport: current chapter gets its own centered row ABOVE the
+   scrubber; the single control row moves to row 2. */
+@media (min-width: 1024px) {
+  body:not([data-transport="min"]) #transportChapter {
+    grid-row: 1; grid-column: 1 / -1;
+    text-align: center;
+    padding-block: 0 var(--space-1);
+    font-size: var(--font-size-1);
+    color: var(--text-secondary);
+  }
+  body:not([data-transport="min"]) .sc-controls,
+  body:not([data-transport="min"]) .sc-scrub-row,
+  body:not([data-transport="min"]) .sc-times,
+  body:not([data-transport="min"]) .sc-menu-row { grid-row: 2; }
+}
+
+/* Add-book step: sort control row */
+.sc-add-sortrow {
+  display: flex; justify-content: flex-end;
+  padding: var(--space-2) var(--space-5) 0;
+}
+.sc-add-sortrow .fds-select { max-inline-size: 160px; }
