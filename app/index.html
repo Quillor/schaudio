@@ -4,6 +4,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+  // Keep the legacy Vercel hostname as a compatibility entry point only.
+  // Moving before auth starts also keeps every new session on one origin.
+  if (location.hostname === "schaudio-tim-rosenberg.vercel.app") {
+    location.replace(`https://schaudio.timrosenberg.app${location.pathname}${location.search}${location.hash}`);
+  }
+</script>
 <title>Schaudio</title>
 <link rel="icon" type="image/png" sizes="32x32" href="brand/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="brand/icon-192.png">
