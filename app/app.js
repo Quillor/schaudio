@@ -4,7 +4,7 @@
 
 "use strict";
 
-const SLUGS = ["lifespan", "counseling", "research-methods", "wampold-common-factors"];
+const SLUGS = ["lifespan", "counseling", "research-methods", "wampold-common-factors", "disability-legislation-handout", "disability-rights-timeline", "counseling-values-ethical-dimensions", "dsm-5-failure", "caspi-moffitt-all-for-one", "710-ch2-and-3"];
 const SPRITE = "../vendor/flavor/icons/sprite.svg";
 const STORE_KEY = "schaudio:v2";
 const CAT_COLORS = ["accent", "success", "warning", "danger", "secondary", "info"];
@@ -1112,6 +1112,11 @@ let sb = null;
 let sbUser = null;
 let pushTimer = 0;
 let googleClient = null;
+let googleIdentityPromise = null;
+let googlePrompted = false;
+let googlePromptInFlight = false;
+let googlePromptTimer = 0;
+const GOOGLE_AUTH = window.SchaudioGoogleAuth;
 
 function authBadge(html) { $("authSlot").innerHTML = html; }
 
@@ -1142,21 +1147,16 @@ async function initAuth() {
 }
 
 /* Google sign-in.
-   Preferred path is the ID-token (GIS) flow: the consent UI runs on OUR
-   origin, so Google shows "Schaudio" rather than the Supabase callback
-   host. If GIS can't load or is dismissed, fall back to the redirect flow,
-   which always works. */
+   iOS home-screen apps use upgraded ITP One Tap and exchange its ID token
+   inside this browsing context. A redirect would finish in an external
+   Safari sheet and strand the session there. Regular browsers keep the
+   established Supabase redirect flow. */
 
 function redirectSignIn() {
   return sb.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: location.origin + location.pathname },
   });
-}
-
-async function sha256Hex(text) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function loadGis() {
@@ -1171,18 +1171,127 @@ function loadGis() {
   });
 }
 
-// iOS home-screen web apps (standalone display mode) cannot complete the GIS
-// popup flow: window.open lands in an in-app browser sheet and the session is
-// established THERE, leaving the user stranded outside the app. A same-window
-// full-page redirect survives inside the standalone webview, so use it
-// directly and never let GIS attempt a popup.
-const IS_STANDALONE = matchMedia("(display-mode: standalone)").matches
-  || navigator.standalone === true;
+const IS_STANDALONE = GOOGLE_AUTH
+  ? GOOGLE_AUTH.isStandalone((query) => matchMedia(query), navigator)
+  : navigator.standalone === true;
+
+function setGoogleStatus(message, isError = false) {
+  document.querySelectorAll(".sc-gis-status").forEach((status) => {
+    status.textContent = message;
+    status.dataset.state = isError ? "error" : "";
+  });
+}
+
+async function handleGoogleCredential(response, rawNonce) {
+  clearTimeout(googlePromptTimer);
+  googlePromptInFlight = false;
+  setGoogleStatus("Finishing sign-in…");
+  let data = null, error = null;
+  try {
+    ({ data, error } = await GOOGLE_AUTH.signInWithCredential(sb.auth, response, rawNonce));
+  } catch (requestError) {
+    error = requestError;
+  }
+  if (error || !data?.session?.user) {
+    setGoogleStatus("Google sign-in did not finish. Try the Google button again.", true);
+    return;
+  }
+  $("standaloneGoogleDialog")?.close();
+  handleSession(data.session);
+}
+
+async function prepareStandaloneGoogle() {
+  if (googleIdentityPromise) return googleIdentityPromise;
+  googleIdentityPromise = (async () => {
+    if (!GOOGLE_AUTH || !googleClient) throw new Error("Google sign-in is not configured");
+    if (!await loadGis()) throw new Error("Google Identity Services did not load");
+    const nonce = await GOOGLE_AUTH.createNonce(crypto, btoa);
+    const identity = window.google.accounts.id;
+    identity.initialize(GOOGLE_AUTH.identityConfig(
+      googleClient,
+      nonce.hashed,
+      (response) => handleGoogleCredential(response, nonce.raw)
+    ));
+    return identity;
+  })();
+  try {
+    return await googleIdentityPromise;
+  } catch (error) {
+    googleIdentityPromise = null;
+    throw error;
+  }
+}
+
+async function requestStandaloneGooglePrompt() {
+  if (googlePromptInFlight) {
+    setGoogleStatus("Use the Google prompt to continue.");
+    return;
+  }
+  googlePromptInFlight = true;
+  setGoogleStatus("Opening Google sign-in…");
+  clearTimeout(googlePromptTimer);
+  googlePromptTimer = setTimeout(() => {
+    if (!googlePromptInFlight) return;
+    googlePromptInFlight = false;
+    setGoogleStatus("If Google sign-in did not appear, tap Try Google sign-in again.", true);
+  }, 12000);
+  try {
+    const identity = await prepareStandaloneGoogle();
+    identity.prompt((notification) => {
+      if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
+        clearTimeout(googlePromptTimer);
+        googlePromptInFlight = false;
+        setGoogleStatus("Google sign-in could not open. Check your connection, then try again.", true);
+      } else if (notification?.isDismissedMoment?.()) {
+        clearTimeout(googlePromptTimer);
+        googlePromptInFlight = false;
+        setGoogleStatus("Google sign-in was closed. Tap Try again when you’re ready.", true);
+      }
+    });
+  } catch {
+    clearTimeout(googlePromptTimer);
+    googlePromptInFlight = false;
+    setGoogleStatus("Google sign-in is unavailable. Check your connection and retry.", true);
+  }
+}
+
+function ensureStandaloneGoogleDialog() {
+  let dialog = $("standaloneGoogleDialog");
+  if (dialog) return dialog;
+  dialog = document.createElement("dialog");
+  dialog.className = "fds-dialog sc-google-dialog";
+  dialog.id = "standaloneGoogleDialog";
+  dialog.setAttribute("aria-labelledby", "standaloneGoogleTitle");
+  dialog.innerHTML = `
+    <button class="sc-google-close" type="button" aria-label="Close sign-in">
+      <i class="fa-regular fa-xmark" aria-hidden="true"></i>
+    </button>
+    <h2 class="fds-dialog-title" id="standaloneGoogleTitle">Sign in to Schaudio</h2>
+    <p class="sc-google-intro">Sign in without leaving the installed app, so your session and listening progress stay here.</p>
+    <button class="sc-google-retry" type="button">${GOOGLE_MARK}<span>Try Google sign-in</span></button>
+    <p class="sc-gis-status" role="status" aria-live="polite"></p>`;
+  document.body.appendChild(dialog);
+  dialog.querySelector(".sc-google-close").addEventListener("click", () => dialog.close());
+  dialog.querySelector(".sc-google-retry").addEventListener("click", requestStandaloneGooglePrompt);
+  return dialog;
+}
+
+function openStandaloneGoogleSignIn() {
+  const dialog = ensureStandaloneGoogleDialog();
+  if (!dialog.open) dialog.showModal();
+  requestStandaloneGooglePrompt();
+}
 
 async function startGoogleSignIn(btn) {
-  if (btn) btn.disabled = true;
-  try { await redirectSignIn(); }
-  finally { setTimeout(() => { if (btn) btn.disabled = false; }, 3000); }
+  return GOOGLE_AUTH.runSignInFlow(
+    IS_STANDALONE,
+    () => openStandaloneGoogleSignIn(),
+    async () => {
+      if (btn) btn.disabled = true;
+      try { await redirectSignIn(); }
+      finally { setTimeout(() => { if (btn) btn.disabled = false; }, 3000); }
+    }
+  );
 }
 
 const GOOGLE_MARK = `<svg class="sc-gmark" viewBox="0 0 48 48" aria-hidden="true">
@@ -1199,6 +1308,20 @@ function handleSession(session) {
 
   if (!sbUser) {
     slot.replaceChildren();
+    if (IS_STANDALONE) {
+      const btn = document.createElement("button");
+      btn.className = "sc-signin";
+      btn.id = "signIn";
+      btn.innerHTML = `${GOOGLE_MARK}<span>Sign in</span>`;
+      btn.title = "Sign in without leaving the installed app";
+      btn.addEventListener("click", openStandaloneGoogleSignIn);
+      slot.appendChild(btn);
+      if (!googlePrompted) {
+        googlePrompted = true;
+        requestStandaloneGooglePrompt();
+      }
+      return;
+    }
     const btn = document.createElement("button");
     btn.className = "sc-signin";
     btn.id = "signIn";
@@ -1208,6 +1331,8 @@ function handleSession(session) {
     slot.appendChild(btn);
     return;
   }
+
+  if ($("standaloneGoogleDialog")?.open) $("standaloneGoogleDialog").close();
 
   const name = sbUser.user_metadata?.full_name || sbUser.email || "Account";
   const email = sbUser.email || "";
