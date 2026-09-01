@@ -39,6 +39,32 @@
     };
   }
 
+  function resolveRedirectUrl(configuredUrl, currentOrigin, currentPathname) {
+    try {
+      const url = new URL(configuredUrl);
+      if (url.protocol === "https:") return url.href;
+    } catch {
+      // Fall through to the current app URL when configuration is absent or invalid.
+    }
+    return new URL(currentPathname, currentOrigin).href;
+  }
+
+  function resolvePopupRedirectUrl(configuredUrl, currentOrigin, currentPathname) {
+    const url = new URL(resolveRedirectUrl(configuredUrl, currentOrigin, currentPathname));
+    url.searchParams.set("authPopup", "1");
+    return url.href;
+  }
+
+  function isTrustedSessionMessage(event, expectedOrigin, expectedSource) {
+    return event?.origin === expectedOrigin
+      && event?.source === expectedSource
+      && event?.data?.type === "schaudio:auth-session"
+      && typeof event.data.accessToken === "string"
+      && event.data.accessToken.length > 0
+      && typeof event.data.refreshToken === "string"
+      && event.data.refreshToken.length > 0;
+  }
+
   function signInWithCredential(authClient, response, rawNonce) {
     if (!response?.credential) {
       return Promise.resolve({
@@ -57,5 +83,14 @@
     return isStandaloneContext ? standaloneFlow() : browserFlow();
   }
 
-  return { isStandalone, createNonce, identityConfig, signInWithCredential, runSignInFlow };
+  return {
+    isStandalone,
+    createNonce,
+    identityConfig,
+    resolveRedirectUrl,
+    resolvePopupRedirectUrl,
+    isTrustedSessionMessage,
+    signInWithCredential,
+    runSignInFlow,
+  };
 });

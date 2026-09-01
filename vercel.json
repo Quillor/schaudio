@@ -1,4 +1,23 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "schaudio-tim-rosenberg.vercel.app"
+        }
+      ],
+      "destination": "https://schaudio.timrosenberg.app/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/media/:path*",
+      "destination": "https://pub-83aebd7fcc2b48538b1f792814c1fc14.r2.dev/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/app/(index.html)?",

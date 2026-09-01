@@ -40,6 +40,47 @@ test("configures upgraded ITP One Tap with a JavaScript credential callback", ()
   });
 });
 
+test("uses the canonical HTTPS app URL for OAuth redirects", () => {
+  assert.equal(
+    googleAuth.resolveRedirectUrl(
+      "https://schaudio.timrosenberg.app/app/",
+      "https://schaudio-tim-rosenberg.vercel.app",
+      "/app/"
+    ),
+    "https://schaudio.timrosenberg.app/app/"
+  );
+  assert.equal(
+    googleAuth.resolveRedirectUrl(
+      "not-a-url",
+      "https://schaudio-tim-rosenberg.vercel.app",
+      "/app/"
+    ),
+    "https://schaudio-tim-rosenberg.vercel.app/app/"
+  );
+});
+
+test("marks the installed-app callback and rejects forged session messages", () => {
+  assert.equal(
+    googleAuth.resolvePopupRedirectUrl(
+      "https://schaudio.timrosenberg.app/app/",
+      "https://fallback.example",
+      "/app/"
+    ),
+    "https://schaudio.timrosenberg.app/app/?authPopup=1"
+  );
+
+  const popup = {};
+  const message = {
+    origin: "https://schaudio.timrosenberg.app",
+    source: popup,
+    data: { type: "schaudio:auth-session", accessToken: "access", refreshToken: "refresh" },
+  };
+  assert.equal(googleAuth.isTrustedSessionMessage(message, message.origin, popup), true);
+  assert.equal(googleAuth.isTrustedSessionMessage({ ...message, origin: "https://evil.example" }, message.origin, popup), false);
+  assert.equal(googleAuth.isTrustedSessionMessage({ ...message, source: {} }, message.origin, popup), false);
+  assert.equal(googleAuth.isTrustedSessionMessage({ ...message, data: { ...message.data, refreshToken: "" } }, message.origin, popup), false);
+});
+
 test("exchanges the Google ID token and raw nonce with Supabase", async () => {
   let payload = null;
   const client = {

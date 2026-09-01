@@ -31,6 +31,8 @@
     // Audio, manifests, book text and covers are served from Cloudflare R2
     // (2.6GB corpus; Vercel deploys stay code-only). Empty string = same-origin.
     mediaBase: "https://pub-83aebd7fcc2b48538b1f792814c1fc14.r2.dev",
+    dataBase: "/media",
+    canonicalAppUrl: "https://schaudio.timrosenberg.app/app/",
     supabaseUrl: "https://dntyenrksitgfichghca.supabase.co",
     // Publishable key: safe in the browser by design — row-level security
     // in supabase/schema.sql is the actual access boundary.
@@ -481,8 +483,8 @@
 </dialog>
 
 <audio id="audio" preload="auto"></audio>
-<script src="google-auth.js?v=20260901auth2"></script>
-<script src="app.js?v=20260901a8"></script>
+<script src="google-auth.js?v=20260901auth4"></script>
+<script src="app.js?v=20260901a10"></script>
 <script src="playlists.js?v=b0ae81e06c"></script>
 </body>
 </html>

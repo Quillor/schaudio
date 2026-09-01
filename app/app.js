@@ -34,6 +34,11 @@ let lastWordKey = "";
 // (Cloudflare R2) so code deploys stay small. Empty base = same-origin (dev).
 const MEDIA_BASE = (window.SCHAUDIO && window.SCHAUDIO.mediaBase || "").replace(/\/$/, "");
 const mediaUrl = (path) => MEDIA_BASE ? `${MEDIA_BASE}/${path}` : path;
+// JSON is fetched through the app origin. The public R2 host intentionally
+// serves the large audio files directly, but its CORS policy is not a reliable
+// dependency for the library catalogue and manifests.
+const DATA_BASE = (window.SCHAUDIO && window.SCHAUDIO.dataBase || "").replace(/\/$/, "");
+const dataUrl = (path) => DATA_BASE ? `${DATA_BASE}/${path}` : mediaUrl(path);
 
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
@@ -149,10 +154,15 @@ function alignTokens(text, words) {
   $("speed").textContent = speedLabel(store.speed);
   initAuth();
 
-  for (const slug of SLUGS) {
-    const book = await fetch(mediaUrl(`books/${slug}/book.json`), { cache: "no-cache" }).then((r) => r.json());
+  const results = await Promise.allSettled(SLUGS.map(async (slug) => {
+    const response = await fetch(dataUrl(`books/${slug}/book.json`), { cache: "no-cache" });
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    const book = await response.json();
     books.set(slug, { book, manifest: null, manifests: {} });
-  }
+  }));
+  results.forEach((result, i) => {
+    if (result.status === "rejected") console.error(`Could not load ${SLUGS[i]}`, result.reason);
+  });
   renderHome();
   renderCategories();
   wireEvents();
@@ -318,8 +328,9 @@ function sortedSlugs() {
     oldest: (a, b) => (bookState(a).lastPlayedAt || 0) - (bookState(b).lastPlayedAt || 0),
     alpha: (a, b) => books.get(a).book.title.localeCompare(books.get(b).book.title),
   }[store.librarySort || "recent"] || (() => 0);
-  const pinned = (store.pinned || []).filter((s) => SLUGS.includes(s));
-  const rest = SLUGS.filter((s) => !pinned.includes(s)).sort(cmp);
+  const available = SLUGS.filter((s) => books.has(s));
+  const pinned = (store.pinned || []).filter((s) => books.has(s));
+  const rest = available.filter((s) => !pinned.includes(s)).sort(cmp);
   return [...pinned, ...rest];
 }
 
@@ -446,7 +457,7 @@ async function getManifest(slug, voiceId, chapterN) {
   const key = `${voiceId}-${chapterN}`;
   if (!(key in entry.manifests)) {
     const file = `manifests/${voiceId}-ch${String(chapterN).padStart(2, "0")}.json`;
-    const m = await fetch(mediaUrl(`books/${slug}/${file}`), { cache: "no-cache" })
+    const m = await fetch(dataUrl(`books/${slug}/${file}`), { cache: "no-cache" })
       .then((r) => (r.ok ? r.json() : null)).catch(() => null);
     const ch = entry.book.chapters.find((c) => c.n === chapterN);
     if (m && ch) m.paragraphs.forEach((p, i) => { p.tokens = alignTokens(ch.paragraphs[i], p.words); });
@@ -1111,11 +1122,8 @@ function applyAppearance(persist = true) {
 let sb = null;
 let sbUser = null;
 let pushTimer = 0;
-let googleClient = null;
-let googleIdentityPromise = null;
-let googlePrompted = false;
-let googlePromptInFlight = false;
-let googlePromptTimer = 0;
+let authPopupWindow = null;
+const IS_AUTH_POPUP = new URLSearchParams(location.search).get("authPopup") === "1";
 const GOOGLE_AUTH = window.SchaudioGoogleAuth;
 
 function authBadge(html) { $("authSlot").innerHTML = html; }
@@ -1125,7 +1133,7 @@ async function initAuth() {
     authBadge(`<span class="sc-auth-badge" title="Sign-in and sync activate on the deployed site">DEV · sign-in off</span>`);
     return;
   }
-  const { supabaseUrl, supabaseAnonKey, googleClientId } = window.SCHAUDIO || {};
+  const { supabaseUrl, supabaseAnonKey } = window.SCHAUDIO || {};
   if (!supabaseUrl || !supabaseAnonKey) {
     authBadge(`<span class="sc-auth-badge" title="Set supabaseUrl and supabaseAnonKey in index.html">sign-in unconfigured</span>`);
     return;
@@ -1140,35 +1148,106 @@ async function initAuth() {
   if (!window.supabase) return authBadge(`<span class="sc-auth-badge">sign-in unavailable</span>`);
 
   sb = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-  googleClient = googleClientId || null;
+  window.addEventListener("message", receivePopupSession);
   const { data: { session } } = await sb.auth.getSession();
   handleSession(session);
-  sb.auth.onAuthStateChange((_evt, s2) => handleSession(s2));
+  relayPopupSession(session);
+  sb.auth.onAuthStateChange((_evt, s2) => {
+    handleSession(s2);
+    relayPopupSession(s2);
+  });
 }
 
 /* Google sign-in.
-   iOS home-screen apps use upgraded ITP One Tap and exchange its ID token
-   inside this browsing context. A redirect would finish in an external
-   Safari sheet and strand the session there. Regular browsers keep the
-   established Supabase redirect flow. */
+   iOS home-screen apps open OAuth from the user's tap, then the canonical
+   callback securely relays the resulting session to the opener and closes.
+   Regular browsers keep the established full-page Supabase redirect flow. */
 
 function redirectSignIn() {
+  const redirectTo = GOOGLE_AUTH.resolveRedirectUrl(
+    window.SCHAUDIO?.canonicalAppUrl,
+    location.origin,
+    location.pathname
+  );
   return sb.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: location.origin + location.pathname },
+    options: { redirectTo },
   });
 }
 
-function loadGis() {
-  if (window.google?.accounts?.id) return Promise.resolve(true);
-  return new Promise((resolve) => {
-    const el = document.createElement("script");
-    el.src = "https://accounts.google.com/gsi/client";
-    el.async = true;
-    el.onload = () => resolve(!!window.google?.accounts?.id);
-    el.onerror = () => resolve(false);
-    document.head.appendChild(el);
+function popupRedirectUrl() {
+  return GOOGLE_AUTH.resolvePopupRedirectUrl(
+    window.SCHAUDIO?.canonicalAppUrl,
+    location.origin,
+    location.pathname
+  );
+}
+
+function canonicalOrigin() {
+  return new URL(GOOGLE_AUTH.resolveRedirectUrl(
+    window.SCHAUDIO?.canonicalAppUrl,
+    location.origin,
+    location.pathname
+  )).origin;
+}
+
+async function receivePopupSession(event) {
+  if (!GOOGLE_AUTH.isTrustedSessionMessage(event, canonicalOrigin(), authPopupWindow)) return;
+  const { accessToken, refreshToken } = event.data;
+  if (!accessToken || !refreshToken) return;
+  const { data, error } = await sb.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
   });
+  if (error || !data?.session) {
+    setGoogleStatus("Google sign-in did not finish. Please try again.", true);
+    return;
+  }
+  setGoogleStatus("Signed in.");
+  $("standaloneGoogleDialog")?.close();
+  authPopupWindow = null;
+}
+
+function relayPopupSession(session) {
+  if (!IS_AUTH_POPUP || !session || !window.opener) return;
+  window.opener.postMessage({
+    type: "schaudio:auth-session",
+    accessToken: session.access_token,
+    refreshToken: session.refresh_token,
+  }, canonicalOrigin());
+  document.title = "Signed in — returning to Schaudio";
+  setTimeout(() => window.close(), 250);
+}
+
+async function requestStandaloneGooglePopup() {
+  if (authPopupWindow && !authPopupWindow.closed) {
+    authPopupWindow.focus();
+    setGoogleStatus("Finish signing in in the Google window.");
+    return;
+  }
+
+  // Open synchronously from the tap so iOS does not treat it as a blocked popup.
+  authPopupWindow = window.open("about:blank", "schaudio-google-auth");
+  if (!authPopupWindow) {
+    setGoogleStatus("Allow the sign-in window, then try again.", true);
+    return;
+  }
+  authPopupWindow.document.title = "Opening Google sign-in…";
+  setGoogleStatus("Opening Google sign-in…");
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: popupRedirectUrl(),
+      skipBrowserRedirect: true,
+    },
+  });
+  if (error || !data?.url) {
+    authPopupWindow.close();
+    authPopupWindow = null;
+    setGoogleStatus("Google sign-in is unavailable. Please try again.", true);
+    return;
+  }
+  authPopupWindow.location.replace(data.url);
 }
 
 const IS_STANDALONE = GOOGLE_AUTH
@@ -1180,79 +1259,6 @@ function setGoogleStatus(message, isError = false) {
     status.textContent = message;
     status.dataset.state = isError ? "error" : "";
   });
-}
-
-async function handleGoogleCredential(response, rawNonce) {
-  clearTimeout(googlePromptTimer);
-  googlePromptInFlight = false;
-  setGoogleStatus("Finishing sign-in…");
-  let data = null, error = null;
-  try {
-    ({ data, error } = await GOOGLE_AUTH.signInWithCredential(sb.auth, response, rawNonce));
-  } catch (requestError) {
-    error = requestError;
-  }
-  if (error || !data?.session?.user) {
-    setGoogleStatus("Google sign-in did not finish. Try the Google button again.", true);
-    return;
-  }
-  $("standaloneGoogleDialog")?.close();
-  handleSession(data.session);
-}
-
-async function prepareStandaloneGoogle() {
-  if (googleIdentityPromise) return googleIdentityPromise;
-  googleIdentityPromise = (async () => {
-    if (!GOOGLE_AUTH || !googleClient) throw new Error("Google sign-in is not configured");
-    if (!await loadGis()) throw new Error("Google Identity Services did not load");
-    const nonce = await GOOGLE_AUTH.createNonce(crypto, btoa);
-    const identity = window.google.accounts.id;
-    identity.initialize(GOOGLE_AUTH.identityConfig(
-      googleClient,
-      nonce.hashed,
-      (response) => handleGoogleCredential(response, nonce.raw)
-    ));
-    return identity;
-  })();
-  try {
-    return await googleIdentityPromise;
-  } catch (error) {
-    googleIdentityPromise = null;
-    throw error;
-  }
-}
-
-async function requestStandaloneGooglePrompt() {
-  if (googlePromptInFlight) {
-    setGoogleStatus("Use the Google prompt to continue.");
-    return;
-  }
-  googlePromptInFlight = true;
-  setGoogleStatus("Opening Google sign-in…");
-  clearTimeout(googlePromptTimer);
-  googlePromptTimer = setTimeout(() => {
-    if (!googlePromptInFlight) return;
-    googlePromptInFlight = false;
-    setGoogleStatus("If Google sign-in did not appear, tap Try Google sign-in again.", true);
-  }, 12000);
-  try {
-    const identity = await prepareStandaloneGoogle();
-    identity.prompt((notification) => {
-      if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
-        clearTimeout(googlePromptTimer);
-        googlePromptInFlight = false;
-        setGoogleStatus("Google sign-in could not open. Check your connection, then try again.", true);
-      } else if (notification?.isDismissedMoment?.()) {
-        clearTimeout(googlePromptTimer);
-        googlePromptInFlight = false;
-        setGoogleStatus("Google sign-in was closed. Tap Try again when you’re ready.", true);
-      }
-    });
-  } catch {
-    clearTimeout(googlePromptTimer);
-    googlePromptInFlight = false;
-    setGoogleStatus("Google sign-in is unavailable. Check your connection and retry.", true);
-  }
 }
 
 function ensureStandaloneGoogleDialog() {
@@ -1267,19 +1273,18 @@ function ensureStandaloneGoogleDialog() {
       <i class="fa-regular fa-xmark" aria-hidden="true"></i>
     </button>
     <h2 class="fds-dialog-title" id="standaloneGoogleTitle">Sign in to Schaudio</h2>
-    <p class="sc-google-intro">Sign in without leaving the installed app, so your session and listening progress stay here.</p>
-    <button class="sc-google-retry" type="button">${GOOGLE_MARK}<span>Try Google sign-in</span></button>
+    <p class="sc-google-intro">Google opens in a secure sign-in window, then returns you here automatically.</p>
+    <button class="sc-google-retry" type="button">${GOOGLE_MARK}<span>Continue with Google</span></button>
     <p class="sc-gis-status" role="status" aria-live="polite"></p>`;
   document.body.appendChild(dialog);
   dialog.querySelector(".sc-google-close").addEventListener("click", () => dialog.close());
-  dialog.querySelector(".sc-google-retry").addEventListener("click", requestStandaloneGooglePrompt);
+  dialog.querySelector(".sc-google-retry").addEventListener("click", requestStandaloneGooglePopup);
   return dialog;
 }
 
 function openStandaloneGoogleSignIn() {
   const dialog = ensureStandaloneGoogleDialog();
   if (!dialog.open) dialog.showModal();
-  requestStandaloneGooglePrompt();
 }
 
 async function startGoogleSignIn(btn) {
@@ -1316,10 +1321,6 @@ function handleSession(session) {
       btn.title = "Sign in without leaving the installed app";
       btn.addEventListener("click", openStandaloneGoogleSignIn);
       slot.appendChild(btn);
-      if (!googlePrompted) {
-        googlePrompted = true;
-        requestStandaloneGooglePrompt();
-      }
       return;
     }
     const btn = document.createElement("button");
