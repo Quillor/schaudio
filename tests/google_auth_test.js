@@ -43,11 +43,11 @@ test("configures upgraded ITP One Tap with a JavaScript credential callback", ()
 test("uses the canonical HTTPS app URL for OAuth redirects", () => {
   assert.equal(
     googleAuth.resolveRedirectUrl(
-      "https://schaudio.timrosenberg.app/app/",
+      "https://schaudio.timrosenberg.app/",
       "https://schaudio-tim-rosenberg.vercel.app",
       "/app/"
     ),
-    "https://schaudio.timrosenberg.app/app/"
+    "https://schaudio.timrosenberg.app/"
   );
   assert.equal(
     googleAuth.resolveRedirectUrl(
@@ -62,11 +62,11 @@ test("uses the canonical HTTPS app URL for OAuth redirects", () => {
 test("marks the installed-app callback and rejects forged session messages", () => {
   assert.equal(
     googleAuth.resolvePopupRedirectUrl(
-      "https://schaudio.timrosenberg.app/app/",
+      "https://schaudio.timrosenberg.app/",
       "https://fallback.example",
       "/app/"
     ),
-    "https://schaudio.timrosenberg.app/app/?authPopup=1"
+    "https://schaudio.timrosenberg.app/?authPopup=1"
   );
 
   const popup = {};

@@ -14,6 +14,10 @@
   ],
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/app/index.html"
+    },
+    {
       "source": "/media/:path*",
       "destination": "https://pub-83aebd7fcc2b48538b1f792814c1fc14.r2.dev/:path*"
     }
