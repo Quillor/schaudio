@@ -1424,6 +1424,7 @@ body[data-transport="min"] .sc-transport-chapter { display: none; }
 .sc-pl-item.dragging { position: relative; z-index: 3; box-shadow: var(--elevation-2, 0 8px 24px rgb(0 0 0 / .15)); background: var(--surface-1); transition: none; }
 .sc-pl-item[data-state="current"] { background: var(--accent-subtle); border-inline-start: 3px solid var(--accent-bg); }
 .sc-pl-grip {
+  appearance: none; border: 0; background: none; padding: 0; font: inherit;
   display: grid; place-items: center;
   inline-size: 40px; block-size: 44px; flex: none;
   color: var(--text-tertiary); cursor: grab;
@@ -1442,6 +1443,7 @@ body[data-transport="min"] .sc-transport-chapter { display: none; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .sc-pl-remove {
+  appearance: none; border: 0; background: none; padding: 0; font: inherit;
   display: grid; place-items: center;
   inline-size: 40px; block-size: 44px; flex: none;
   color: var(--text-tertiary); cursor: pointer; border-radius: var(--radius-control);
@@ -1649,7 +1651,14 @@ body[data-view="playlist"] #viewReader { display: none; }
 .sc-add-book { padding: var(--space-3); border-radius: var(--radius-sm); border-block-end: 0; margin-block-end: var(--space-1); }
 .sc-add-book:hover { background: var(--surface-2); }
 .fds-dialog .fds-field { margin-block-end: var(--space-4); }
-.fds-dialog-actions { margin-block-start: var(--space-5); gap: var(--space-2); }
+.fds-dialog-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-block-start: var(--space-5);
+  gap: var(--space-2);
+}
 .sc-library-head { margin-block-end: var(--space-4); }
 .sc-toptabs { padding-inline: var(--space-6); }
 .sc-pl-empty { padding-block: var(--space-8, 56px); }
@@ -1678,11 +1687,95 @@ body[data-view="playlist"] #viewReader { display: none; }
 .sc-add-sortrow .fds-select { max-inline-size: 160px; }
 
 /* Play/Resume: icon and label were cramped edge-to-edge */
-.sc-pl-play {
+button.fds-button.sc-pl-play {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding-inline: var(--space-5) var(--space-6);
+  padding-inline: var(--space-5);
 }
 .sc-pl-play i { font-size: 14px; }
+
+/* ==================== Mobile interaction contract (2026-09-01) ==========
+   Touch controls use a 48px preferred target (44px remains the hard floor).
+   Text buttons use the same padding on both inline edges; icon-only controls
+   are square. These tokens are mirrored in DESIGN.md so new UI inherits the
+   rule instead of relying on one-off component fixes. */
+:root {
+  --sc-touch-target: 48px;
+  --sc-touch-padding-block: var(--space-3);
+  --sc-touch-padding-inline: var(--space-5);
+  --sc-touch-gap: var(--space-3);
+}
+
+@media (max-width: 760px) {
+  button { min-block-size: var(--sc-touch-target); }
+
+  .fds-button {
+    box-sizing: border-box;
+    block-size: auto;
+    min-block-size: var(--sc-touch-target);
+    padding-block: var(--sc-touch-padding-block);
+    padding-inline: var(--sc-touch-padding-inline);
+    line-height: 1.25;
+    touch-action: manipulation;
+  }
+
+  /* Dialog choices are visually balanced and each action gets a full-size
+     target. One-action dialogs naturally span the complete action row. */
+  .fds-dialog-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sc-touch-gap);
+  }
+  .fds-dialog-actions > .fds-button { inline-size: 100%; }
+  .fds-dialog-actions > .fds-button:only-child { grid-column: 1 / -1; }
+
+  .sc-library-head { align-items: flex-start; }
+  #homePlaylistsPane .sc-library-head { flex-wrap: wrap; }
+  #plNew { flex: none; }
+
+  .sc-toptab,
+  .sc-pl-open,
+  .sc-pl-item-main,
+  .sc-panel-tab,
+  .sc-pop-cat,
+  .sc-signin,
+  .sc-account-btn {
+    min-block-size: var(--sc-touch-target);
+  }
+
+  button.fds-button.sc-pl-play,
+  .sc-pl-add,
+  .sc-signin,
+  .sc-account-btn {
+    padding-block: var(--sc-touch-padding-block);
+    padding-inline: var(--sc-touch-padding-inline);
+  }
+
+  /* Icon-only controls remain visually quiet while their actual targets grow. */
+  .sc-appbar > .fds-button,
+  .sc-add-head > .fds-button,
+  .sc-panel-close,
+  .sc-guest-dismiss,
+  .sc-pl-grip,
+  .sc-pl-remove,
+  .sc-add-ctl,
+  .sc-tile-pin,
+  .sc-note-del,
+  .sc-bm-x,
+  .sc-cat-edit {
+    box-sizing: border-box;
+    inline-size: var(--sc-touch-target);
+    min-inline-size: var(--sc-touch-target);
+    block-size: var(--sc-touch-target);
+    min-block-size: var(--sc-touch-target);
+    padding: 0;
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 340px) {
+  #homePlaylistsPane .sc-library-head { align-items: stretch; }
+  #plNew { inline-size: 100%; }
+}

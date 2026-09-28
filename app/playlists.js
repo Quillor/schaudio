@@ -256,7 +256,7 @@ function renderPlaylistDetail() {
       row.innerHTML = `
         <span class="sc-pl-grip" aria-hidden="true"><i class="fa-regular fa-grip-dots-vertical"></i></span>
         <span class="sc-chapter-meta"><span class="sc-chapter-sub">No longer available</span></span>
-        <span class="sc-pl-remove" role="button" tabindex="0" aria-label="Remove"><i class="fa-regular fa-xmark"></i></span>`;
+        <button type="button" class="sc-pl-remove" aria-label="Remove unavailable chapter"><i class="fa-regular fa-xmark" aria-hidden="true"></i></button>`;
     } else {
       const book = books.get(item.slug).book;
       const st = chState(item.slug, item.n);
@@ -266,8 +266,8 @@ function renderPlaylistDetail() {
       const active = playQueue?.playlistId === pl.id && playQueue.idx === i;
       row.dataset.state = active ? "current" : "";
       row.innerHTML = `
-        <span class="sc-pl-grip" role="button" tabindex="0" aria-label="Reorder (arrow keys)"><i class="fa-regular fa-grip-dots-vertical" aria-hidden="true"></i></span>
-        <button class="sc-pl-item-main">
+        <button type="button" class="sc-pl-grip" aria-label="Reorder ${esc(ch.title)} with the arrow keys"><i class="fa-regular fa-grip-dots-vertical" aria-hidden="true"></i></button>
+        <button type="button" class="sc-pl-item-main">
           <span class="sc-chapter-meta">
             <span class="sc-pl-item-book">${esc(book.title)}</span>
             <span class="sc-chapter-title">${esc(ch.title)}</span>
@@ -275,7 +275,7 @@ function renderPlaylistDetail() {
           </span>
           <i class="fa-solid ${active ? "fa-volume-high" : "fa-play"}" aria-hidden="true"></i>
         </button>
-        <span class="sc-pl-remove" role="button" tabindex="0" aria-label="Remove ${esc(ch.title)}"><i class="fa-regular fa-xmark" aria-hidden="true"></i></span>`;
+        <button type="button" class="sc-pl-remove" aria-label="Remove ${esc(ch.title)}"><i class="fa-regular fa-xmark" aria-hidden="true"></i></button>`;
       row.querySelector(".sc-pl-item-main").addEventListener("click", () => playPlaylistItem(pl.id, i, { autoplay: true }));
     }
     if (pl.role !== "owner") {
@@ -293,7 +293,6 @@ function renderPlaylistDetail() {
       plUpdateItemsRemapped(pl, items);
     };
     rm.addEventListener("click", doRemove);
-    rm.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") doRemove(e); });
     wireDrag(row, pl);
     host.appendChild(row);
   });
@@ -428,6 +427,7 @@ function confirmDeletePlaylist(id) {
   if (!pl) return;
   $("plDeleteName").textContent = pl.title;
   $("plDeleteDialog").showModal();
+  $("plDeleteCancel").focus();
   $("plDeleteConfirm").onclick = () => {
     if (playQueue?.playlistId === id) clearQueue();
     plDelete(id);
@@ -610,6 +610,18 @@ function plBoot() {
   $("plDialogSave").addEventListener("click", savePlDialog);
   $("plDialogCancel").addEventListener("click", () => $("plDialog").close());
   $("plDeleteCancel").addEventListener("click", () => $("plDeleteDialog").close());
+  $("plDeleteDialog").addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    const first = $("plDeleteCancel");
+    const last = $("plDeleteConfirm");
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
 
   // add-chapter modal
   $("addBackToBooks").addEventListener("click", () => setAddStep("books"));

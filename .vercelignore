@@ -15,5 +15,6 @@ supabase/
 *.pdf
 *.log
 .git/
+.agents/
 DESIGN.md
 app/books/

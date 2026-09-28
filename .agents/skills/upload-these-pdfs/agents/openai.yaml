@@ -1,0 +1,4 @@
+interface:
+  display_name: "Upload these pdfs"
+  short_description: "Publish Schaudio readings with Sam, then Morgan"
+  default_prompt: "Use $upload-these-pdfs to add these PDFs to Schaudio and publish each completed reading with Sam first, then Morgan."

@@ -78,3 +78,23 @@ One orchestrated moment: the word fill advancing, and the page keeping the spoke
 - Register: plain and bookish. It talks about books, not about software.
 - CTAs by exact label: `Resume` · `Play` · `Add note` · `Save highlight` · `Bookmark` · `New category` · `Jump to`
 - Banned for this brief: seamless, unlock, empower, immersive, experience (as a noun), "Get started".
+
+## Mobile interaction contract
+
+Mobile controls are designed for fingers first. This is a system rule, not a
+playlist-specific exception.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--sc-touch-target` | `48px` | Preferred minimum width and height for mobile actions |
+| hard target floor | `44px` | No mobile button target may render smaller |
+| `--sc-touch-padding-block` | `8px` | Top and bottom padding for text buttons |
+| `--sc-touch-padding-inline` | `16px` | Equal leading and trailing padding for text buttons |
+| `--sc-touch-gap` | `12px` | Separation between adjacent mobile actions |
+
+- Text buttons keep symmetric inline padding; icons never steal space from the label edge.
+- Icon-only actions use a square `48px` target while the icon itself stays visually small.
+- Two-action dialogs use equal-width columns. A single dialog action fills the row.
+- Destructive confirmations focus the safe action first and never make the destructive target smaller.
+- Dense rows may preserve their visual rhythm, but their interactive surface still meets the `44px` floor.
+- New mobile components must reuse these tokens instead of declaring local button dimensions.

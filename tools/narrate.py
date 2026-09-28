@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 import edge_tts
+from citations import book_omits_citations, prepare_narration
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -68,8 +69,10 @@ async def narrate_chapter(book_dir, chapter, voice_id):
     rel_dir = f"audio/{voice_id}/ch{n:02d}"
     manifest = {"chapter": n, "voice": cfg["voice"], "paragraphs": []}
     offset = 0
+    omit_citations = book_omits_citations(book_dir)
     for i, text in enumerate(chapter["paragraphs"]):
-        words = await synth(text, cfg, book_dir / rel_dir / f"p{i:02d}.mp3")
+        spoken, alignment = prepare_narration(text, omit_citations)
+        words = await synth(spoken, cfg, book_dir / rel_dir / f"p{i:02d}.mp3")
         duration = words[-1]["endMs"] + cfg["tail_ms"]
         manifest["paragraphs"].append({
             "id": i,
@@ -77,6 +80,7 @@ async def narrate_chapter(book_dir, chapter, voice_id):
             "startMs": offset,
             "durationMs": duration,
             "words": words,
+            **alignment,
         })
         offset += duration
     manifest["totalMs"] = offset
