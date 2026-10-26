@@ -51,6 +51,19 @@ class CitationTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             prepare_narration("(Smith, 2019).", True)
 
+    def test_numeric_style_omits_reference_numbers_only_when_declared(self):
+        text = "Guidelines from the APA (29, 30) and NICE (31) support CBT (18–21), see Orwin (63)."
+        spoken, meta = prepare_narration(text, True, numeric=True)
+        self.assertEqual(spoken, "Guidelines from the APA and NICE support CBT, see Orwin.")
+        self.assertEqual(len(meta["narrationTokens"]), len(text.split()))
+        self.assertEqual(prepare_narration("Reviews (74– 82) differ.", True, numeric=True)[0], "Reviews differ.")
+        # Author-date books keep bare numbers: they are codes and counts, not references.
+        coded = "Scored as present (2), absent (0), or partial (1)."
+        self.assertEqual(prepare_narration(coded, True)[0], coded)
+        # Statistics and counts in brackets are never reference lists.
+        kept = "Dropout (n = 30) was lower (p < .05) at week (12 weeks)."
+        self.assertEqual(prepare_narration(kept, True, numeric=True)[0], kept)
+
     def test_reader_repeated_author_does_not_desynchronize(self):
         text = "Support (Support, 2019) Support continued."
         spoken, meta = prepare_narration(text, True)

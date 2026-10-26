@@ -7,6 +7,8 @@ app/books/*/audio/
 app/books/*/manifests/
 app/books/*/book.json
 app/books/*/cover.png
+app/books/*/figures/
+app/books/*/ingest-report.json
 
 # ---- environments and build output ---------------------------------------
 .venv-tts/

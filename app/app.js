@@ -400,6 +400,11 @@ async function openBook(slug, { autoplay = false, chapter = null , fromPlaylist 
     notice.textContent = entry.book.source.note;
     page.appendChild(notice);
   }
+  // Figures and tables are display-only: they sit between paragraphs but are
+  // not in ch.paragraphs, so narration, word sync and seeking never see them.
+  const visualsAfter = (p) => (ch.visuals || []).filter((v) => v.after === p)
+    .forEach((v) => page.appendChild(visualEl(slug, v)));
+  visualsAfter(-1);
   ch.paragraphs.forEach((text, p) => {
     const el = document.createElement("p");
     el.className = "sc-para";
@@ -418,6 +423,7 @@ async function openBook(slug, { autoplay = false, chapter = null , fromPlaylist 
       el.appendChild(document.createTextNode(" "));
     });
     page.appendChild(el);
+    visualsAfter(p);
   });
 
   // These books are ingested as excerpts. Saying so at the end of the text is
@@ -458,6 +464,20 @@ async function openBook(slug, { autoplay = false, chapter = null , fromPlaylist 
     $("progressBadge").textContent = "Audio not available yet — text is readable";
   }
   save();
+}
+
+function visualEl(slug, v) {
+  const src = mediaUrl(`books/${slug}/${v.src}`);
+  const fig = document.createElement("figure");
+  fig.className = "sc-visual";
+  fig.dataset.kind = v.kind;
+  fig.innerHTML = `
+    <a class="sc-visual-link" href="${esc(src)}" target="_blank" rel="noopener"
+       aria-label="${esc(v.label)} — open full size in a new tab">
+      <img src="${esc(src)}" alt="${esc(v.label)} from the original article" width="${v.w}" height="${v.h}" loading="lazy" decoding="async">
+    </a>
+    <figcaption><span>${esc(v.label)}</span><span class="sc-visual-note">Shown, not narrated · tap to enlarge</span></figcaption>`;
+  return fig;
 }
 
 /* ---------------- voices ---------------- */
@@ -560,7 +580,7 @@ function renderChapters() {
       if (active) el.setAttribute("aria-current", "true");
 
       // The speaker icon already marks the playing row; a badge was redundant.
-      const status = ch.bib ? "Text only — references"
+      const status = ch.bib ? (ch.textOnlyNote || "Text only — references")
         : active ? ""
         : finished ? "Finished"
         : pos > 1000 ? `${pct}% · ${fmt(Math.max(0, estMs - pos))} left`

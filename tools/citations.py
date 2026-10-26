@@ -17,13 +17,20 @@ CITATION = re.compile(
 )
 NARRATIVE = re.compile(rf"(?:{AUTHORS})(?:['’]s)?\s*$")
 YEAR_ONLY = re.compile(rf"^{YEAR}(?:\s*,\s*{YEAR})*(?:,\s*p{{1,2}}\.\s*[\d–—\-]+)?$")
+# Vancouver/AMA style: "(21–24)", "(8, 9)", "(74– 82)". Only for books that declare it, since
+# author-date papers use bare numbers in brackets for other things ("present (2), absent (0)").
+REF_NUM = r"\d{1,3}(?:\s*[–—\-]\s*\d{1,3})?"
+NUMERIC = re.compile(rf"^\s*{REF_NUM}(?:\s*,\s*{REF_NUM})*\s*$")
 
 
-def citation_spans(text):
+def citation_spans(text, numeric=False):
     """Return half-open character spans; keep ambiguous prose parentheticals."""
     spans = []
     for match in PAREN.finditer(text):
         body = match.group()[1:-1]
+        if numeric and NUMERIC.fullmatch(body):
+            spans.append((match.start(), match.end()))
+            continue
         groups = [part.strip() for part in body.split(";")]
         follows_author = NARRATIVE.search(text[:match.start()])
         parenthetical = all(CITATION.fullmatch(part) or (index == 0 and follows_author and YEAR_ONLY.fullmatch(part))
@@ -50,16 +57,17 @@ def citation_spans(text):
     return spans
 
 
-def prepare_narration(text, omit_citations=False):
+def prepare_narration(text, omit_citations=False, numeric=False):
     if not omit_citations:
         return text, {}
-    spans = citation_spans(text)
+    spans = citation_spans(text, numeric)
     chars = list(text)
     for start, end in spans:
         chars[start:end] = [" "] * (end - start)
     cleaned = "".join(chars)
     tokens = [cleaned[m.start():m.end()].strip() for m in re.finditer(r"\S+", text)]
     spoken = re.sub(r"\s+([,;:!?]|\.(?!\d))", r"\1", " ".join(cleaned.split()))
+    spoken = re.sub(r"(?<!\.)\.\.(?!\.)", ".", spoken)  # "Kandemir et al. (2017)." -> "Kandemir et al."
     if not any(ch.isalnum() for ch in spoken):
         raise ValueError("paragraph contains only a citation; move it to text-only bibliography before narration")
     return spoken, {"narrationTokens": tokens, "omittedCitationSpans": spans}
@@ -68,3 +76,9 @@ def prepare_narration(text, omit_citations=False):
 def book_omits_citations(book_dir):
     import json
     return json.loads((book_dir / "book.json").read_text()).get("narration", {}).get("omitInTextCitations") is True
+
+
+def book_numeric_citations(book_dir):
+    """narration.citationStyle == "numeric": also omit bracketed reference numbers."""
+    import json
+    return json.loads((book_dir / "book.json").read_text()).get("narration", {}).get("citationStyle") == "numeric"

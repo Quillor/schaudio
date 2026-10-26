@@ -1095,6 +1095,34 @@ body[data-transport="min"] #timeNow { margin-inline-end: 0; }
 }
 
 /* ---- end-of-excerpt marker ---- */
+/* Figures and tables: cropped from the source PDF, display-only (never narrated).
+   The crop is black-on-white print, so it keeps a light mat in dark mode too. */
+.sc-visual {
+  max-inline-size: min(100%, 80ch);
+  margin: var(--space-6) auto var(--space-7);
+}
+.sc-visual-link {
+  display: block;
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-container);
+  background: var(--surface-page);
+}
+/* Dark mode: the near-white text token doubles as a paper-coloured mat. */
+:root[data-mode="dark"] .sc-visual-link { background: var(--text-primary); }
+.sc-visual-link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.sc-visual img { display: block; inline-size: 100%; block-size: auto; }
+.sc-visual figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  margin-block-start: var(--space-2);
+  font-size: var(--font-size-1);
+  color: var(--text-secondary);
+}
+.sc-visual-note { color: var(--text-tertiary); }
+
 .sc-excerpt-end {
   max-inline-size: 60ch;
   margin: var(--space-8) auto 0;
