@@ -1,0 +1,365 @@
+{
+  "id": "multicultural-dev-exam-2",
+  "title": "Multicultural Developmental — Exam #2",
+  "subtitle": "Chapters 8–14 · from the class study guide",
+  "source": "Multicultural Developmental Exam #2 study guide (PDF)",
+  "note": "Every question and answer explanation is drawn only from the study guide. In each item, choice 0 is correct; the app shuffles choices on every attempt.",
+  "questions": [
+    {
+      "id": "c8-01", "chapter": 8, "topic": "Sex and gender definitions",
+      "prompt": "A professor tells the class that the roles, norms, and expectations a society attaches to being male or female are socially constructed. Which term is the professor defining?",
+      "choices": ["Gender", "Sex", "Gender identity", "Gender schema"],
+      "answer": 0,
+      "explanation": "Gender = socially constructed roles, norms, and expectations. Sex refers to biological differences (sex assigned at birth), and gender identity is one's internal sense of self regarding gender."
+    },
+    {
+      "id": "c8-02", "chapter": 8, "topic": "Gender constancy",
+      "prompt": "A preschooler watches a boy put on a princess dress and insists, “Now he’s a girl.” Which aspect of gender understanding has this child NOT yet achieved?",
+      "choices": ["Gender constancy", "Gender label", "Social transition", "Gender dysphoria"],
+      "answer": 0,
+      "explanation": "Gender constancy is the understanding that changes in appearance, clothing, etc. do not change gender. The child believes clothing changed the boy's gender, so constancy is missing."
+    },
+    {
+      "id": "c8-03", "chapter": 8, "topic": "Gender label, stability, constancy",
+      "prompt": "Which component of gender understanding emerges FIRST in development?",
+      "choices": ["Gender label — identifying oneself as a gender category", "Gender stability — knowing gender stays the same over time", "Gender constancy — knowing appearance changes don’t change gender", "Flexible thinking about gender stereotypes"],
+      "answer": 0,
+      "explanation": "The guide states the gender label (the ability to identify oneself as a gender category) occurs first in the development of gender understanding, before stability and constancy."
+    },
+    {
+      "id": "c8-04", "chapter": 8, "topic": "Social transition",
+      "prompt": "A 14-year-old begins going by a new name, uses new pronouns, and changes their hairstyle and clothing to match their gender identity. There has been no medical treatment. This is best described as:",
+      "choices": ["Social transition", "Medical transition", "Gender constancy", "Gender schema formation"],
+      "answer": 0,
+      "explanation": "Social transition = adopting a name, pronouns, appearance, or behaviors that align with gender identity. The guide stresses it is distinct from medical transition."
+    },
+    {
+      "id": "c8-05", "chapter": 8, "topic": "Gender identity and social/emotional development",
+      "prompt": "Gender-diverse youth show higher rates of depression, anxiety, and suicidality. According to the study guide, these elevated rates are largely associated with:",
+      "choices": ["Lack of acceptance, bullying, and victimization", "The gender-diverse identity itself", "Earlier pubertal timing", "Poor perspective-taking skills"],
+      "answer": 0,
+      "explanation": "The guide links these outcomes largely to lack of acceptance, bullying, and victimization, and notes the best outcomes occur when youth are supported by family, school, and peers."
+    },
+    {
+      "id": "c8-06", "chapter": 8, "topic": "Gender schema theory",
+      "prompt": "After seeing TV ads and hearing comments at preschool, a 4-year-old refuses a toy kitchen, saying “that’s for girls,” and picks a truck instead. Which framework best explains this choice?",
+      "choices": ["Gender schema theory", "Holland’s theory of convergence", "Marcia’s identity statuses", "The attachment transfer process"],
+      "answer": 0,
+      "explanation": "Gender schema theory: children extract gender-related messages from experience and build a network of expectations and beliefs that guides behavior — including toy preferences, activities, and peer choices."
+    },
+    {
+      "id": "c8-07", "chapter": 8, "topic": "Peer groups",
+      "prompt": "According to the study guide, cliques (small informal groups of about 3–9 members) form largely to meet which two needs?",
+      "choices": ["Identity formation and acceptance/belonging", "Autonomy and competence", "Reward-seeking and threat detection", "Passion and commitment"],
+      "answer": 0,
+      "explanation": "Cliques form largely from two needs: identity formation and acceptance/belonging. (Autonomy and competence are self-determination needs from Ch. 14.)"
+    },
+    {
+      "id": "c8-08", "chapter": 8, "topic": "Sociometric categories",
+      "prompt": "In a classroom nomination study, Jordan receives many “leader” nominations AND many “villain” nominations. Jordan’s social impact is high and social preference is about average. Jordan is best classified as:",
+      "choices": ["Controversial", "Popular", "Rejected-aggressive", "Neglected"],
+      "answer": 0,
+      "explanation": "Controversial children get many positive and many negative nominations: high impact (positive + negative) with average preference (positive − negative). They are often leaders but aggressive or divisive."
+    },
+    {
+      "id": "c8-09", "chapter": 8, "topic": "Sociometry",
+      "prompt": "A child receives few nominations of any kind — neither liked nor disliked by many classmates. What does the study guide say about this child’s developmental outlook?",
+      "choices": ["Neglected status is not associated with developmental problems", "Neglected status predicts later depression and loneliness", "Neglected status predicts dropout and criminal behavior", "Neglected status reflects high social impact"],
+      "answer": 0,
+      "explanation": "Neglected children have few nominations and low visibility/social impact, but the guide states this status is not associated with developmental problems. Depression/loneliness risk belongs to rejected-withdrawn children."
+    },
+    {
+      "id": "c8-10", "chapter": 8, "topic": "Rejected subtypes",
+      "prompt": "A disliked child often assumes peers bump into him on purpose and responds with verbal hostility. Which subtype fits, and what outcome is he at risk for?",
+      "choices": ["Rejected-aggressive; poor academic/social outcomes such as dropout or criminal behavior", "Rejected-withdrawn; later depression and loneliness", "Controversial; becoming a divisive leader", "Average; no problematic mental health outcomes"],
+      "answer": 0,
+      "explanation": "Rejected-aggressive children are high in instrumental aggression and verbal negativity and show hostile attribution bias. They are at risk for poor academic/social outcomes (dropout, criminal behavior, drug use)."
+    },
+
+    {
+      "id": "c9-01", "chapter": 9, "topic": "Growth spurts",
+      "prompt": "Compared with boys, when does the adolescent growth spurt typically occur in girls?",
+      "choices": ["About 2 years earlier", "About 2 years later", "At the same time", "About 4 years earlier"],
+      "answer": 0,
+      "explanation": "The growth spurt occurs about 2 years earlier in girls than boys. It lasts about 4 years, with an average height gain of about 10 inches for both sexes."
+    },
+    {
+      "id": "c9-02", "chapter": 9, "topic": "Brain changes",
+      "prompt": "During adolescence, gray matter decreases while white matter increases. What does the study guide say these changes reflect?",
+      "choices": ["Pruning of unused connections, plus better connectivity and efficiency", "Loss of neurons, plus a build-up of damaged tissue", "Slowing of learning, plus reduced plasticity", "Growth of new neurons, plus loss of myelin"],
+      "answer": 0,
+      "explanation": "Gray matter decreases through pruning of unused connections, and white matter increases for better connectivity and efficiency. This is part of the major neural reorganization and plasticity of adolescence."
+    },
+    {
+      "id": "c9-03", "chapter": 9, "topic": "Hot vs. cool processing",
+      "prompt": "A professor says adolescent sensation-seeking reflects a “developmental imbalance.” Which pairing correctly describes that imbalance?",
+      "choices": ["Hot (limbic/nucleus accumbens) processing develops earlier; cool (prefrontal) processing develops later", "Cool (prefrontal) processing develops earlier; hot (limbic) processing develops later", "Hot and cool processing mature at the same time, but dopamine falls", "The amygdala matures before the ventral striatum, which increases fear"],
+      "answer": 0,
+      "explanation": "Hot processing (subcortical/limbic regions, nucleus accumbens) handles emotion, reward, and peer influence and develops earlier. Cool processing (prefrontal cortex) handles planning, inhibition, and judgment and develops later. The gap contributes to risk-taking."
+    },
+    {
+      "id": "c9-04", "chapter": 9, "topic": "Approach vs. avoidance systems",
+      "prompt": "Which brain structures are matched correctly to the approach and avoidance systems?",
+      "choices": ["Approach = ventral striatum (rewards); avoidance = amygdala (threats)", "Approach = amygdala (rewards); avoidance = ventral striatum (threats)", "Approach = prefrontal cortex; avoidance = HPA axis", "Approach = nucleus accumbens; avoidance = prefrontal cortex"],
+      "answer": 0,
+      "explanation": "The approach system (ventral striatum) focuses on rewards, and the avoidance system (amygdala) detects danger and threats. They mature at different rates, which contributes to adolescent risk behavior."
+    },
+    {
+      "id": "c9-05", "chapter": 9, "topic": "Adolescent sleep needs",
+      "prompt": "A high school junior accumulated 2 hours of sleep debt during exam week. Using the study guide’s rule of thumb, about how much recovery sleep will she need?",
+      "choices": ["About 3 hours", "About 2 hours", "About 1 hour", "About 9.2 hours"],
+      "answer": 0,
+      "explanation": "One hour of sleep debt requires roughly 1.5 hours of recovery sleep, so 2 hours × 1.5 = about 3 hours. (9.2 hours is the average naturally desired nightly amount.)"
+    },
+    {
+      "id": "c9-06", "chapter": 9, "topic": "Adolescent egocentrism",
+      "prompt": "Maya skips school picture day because she is sure everyone will stare at a small pimple on her chin. Which form of adolescent egocentrism is she showing?",
+      "choices": ["Imaginary audience", "Personal fable", "Invincibility fable", "Metacognition"],
+      "answer": 0,
+      "explanation": "Imaginary audience = the belief that others are focused on you. Personal fable is the belief that you are unique or special, and the invincibility fable is the belief that you are immune to harm."
+    },
+    {
+      "id": "c9-07", "chapter": 9, "topic": "Marcia’s identity statuses",
+      "prompt": "Since childhood, Daniel has planned to take over his parents’ restaurant. He has never considered other careers and is fully committed to the plan. Which identity status best fits Daniel?",
+      "choices": ["Foreclosure", "Moratorium", "Achievement", "Diffusion"],
+      "answer": 0,
+      "explanation": "Foreclosure = committed without exploring. Achievement requires exploration followed by commitment. Moratorium is exploring with no commitment yet (the typical adolescent mindset). Diffusion is neither exploration nor commitment."
+    },
+    {
+      "id": "c9-08", "chapter": 9, "topic": "Adolescence and depression",
+      "prompt": "Why are early-maturing girls at greater risk for depression, according to the study guide?",
+      "choices": ["Body comparison, sexual victimization, social pressures, rumination, and negative body image", "Early maturation gives girls higher social status, which increases stress", "Their circadian rhythms shift earlier than boys’", "They are less likely to have their emotional struggles recognized"],
+      "answer": 0,
+      "explanation": "The guide lists body comparison, sexual victimization, social pressures, stereotypes, rumination, negative body image, and lower perceived social value. Higher social status is described for early-maturing boys, and the guide says girls' struggles are more often recognized, not less."
+    },
+    {
+      "id": "c9-09", "chapter": 9, "topic": "Ethnic/racial identity",
+      "prompt": "A counselor working with Latino adolescents who face frequent microaggressions wants to protect their wellbeing. Based on the study guide, which factor can buffer the negative effects of discrimination?",
+      "choices": ["A strong ethnic/racial identity (ERI)", "Viewing race as less central to identity", "Assuming the ethnic group is homogeneous", "Avoiding discussions of intersectionality"],
+      "answer": 0,
+      "explanation": "A strong ethnic/racial identity (ERI) can buffer against the negative effects of discrimination. The guide also warns against assuming groups are homogeneous and calls for considering intersectionality."
+    },
+
+    {
+      "id": "c10-01", "chapter": 10, "topic": "Peer influence",
+      "prompt": "Which statement about peer influence matches the study guide?",
+      "choices": ["It is not the same as peer pressure; it is strongest for antisocial and risky behaviors but can also promote prosocial behavior", "It is another name for peer pressure and only leads to risky behavior", "It is strongest for prosocial behavior and rarely affects risky behavior", "It increases steadily from early adolescence through emerging adulthood"],
+      "answer": 0,
+      "explanation": "Peer influence (acting or thinking in a way one might not otherwise, because of experiences with peers) is explicitly NOT peer pressure. It is strongest for antisocial and risky behaviors but can promote prosocial behavior. Peer influence is greater in early adolescence and declines with time."
+    },
+    {
+      "id": "c10-02", "chapter": 10, "topic": "Social media",
+      "prompt": "Studies of social media and adolescent mental health point to a screen-time threshold. Above about how much daily use does the likelihood of mental health disorders increase?",
+      "choices": ["2 hours per day", "30 minutes per day", "5 hours per day", "8 hours per day"],
+      "answer": 0,
+      "explanation": "Over 2 hours per day is linked to a greater likelihood of depression, self-harm, and suicidal ideation or attempts. Moderators include personality, prior experiences, the manner of engagement, and cyberbullying or victimization."
+    },
+    {
+      "id": "c10-03", "chapter": 10, "topic": "Domains of parental authority",
+      "prompt": "A 15-year-old and her parents argue about whether she can go to a party where there will be alcohol. In which domain does this conflict fall — the one where most teen–parent disagreement occurs?",
+      "choices": ["Prudential (risk) domain", "Moral domain", "Social-conventional domain", "Personal domain"],
+      "answer": 0,
+      "explanation": "The prudential (risk) domain involves potentially risky choices and is where most disagreement between teens and parents occurs. Parents are seen as highly legitimate in the moral domain."
+    },
+    {
+      "id": "c10-04", "chapter": 10, "topic": "Parental responsiveness",
+      "prompt": "At family meetings, a father asks his teen’s opinion on rules and encourages her to express herself, treating her as an active member of the family. Which aspect of parental responsiveness is this, and what does it promote?",
+      "choices": ["Democracy; self-confidence and competence", "Acceptance; self-esteem and social adjustment", "Parental monitoring; less delinquency", "Solicitation; more secrecy"],
+      "answer": 0,
+      "explanation": "Democracy = soliciting opinions and encouraging self-expression, which promotes self-confidence and competence. Acceptance (involvement, praise, support) promotes self-esteem and social adjustment."
+    },
+    {
+      "id": "c10-05", "chapter": 10, "topic": "School practices and climate",
+      "prompt": "Which school characteristic does the study guide link to LOWER student motivation and academic orientation?",
+      "choices": ["Ability grouping and social comparison", "Warmth, safety, and connectedness", "Effective teaching with accommodations and feedback", "Appropriate rules and student management"],
+      "answer": 0,
+      "explanation": "School practices linked to low motivation include an emphasis on teacher control, whole-group lectures, ability grouping, social comparison, and fewer decision-making opportunities. The other options are school-climate factors linked to greater achievement."
+    },
+    {
+      "id": "c10-06", "chapter": 10, "topic": "Adolescent employment",
+      "prompt": "A parent asks how many hours their high schooler should work. Based on research summarized in the study guide, which amount is linked to the best postsecondary schooling outcomes?",
+      "choices": ["Less than 5 hours a week", "10–15 hours a week", "20 or more hours a week", "No paid work at all, under any circumstances"],
+      "answer": 0,
+      "explanation": "Part-time work can be valuable, and less than 5 hours a week has the best postsecondary outcomes. High-intensity work can bring negative outcomes, especially among White youth (this is not true for Black youth)."
+    },
+    {
+      "id": "c10-07", "chapter": 10, "topic": "Risk taking",
+      "prompt": "A popular belief is that teens take risks because they do not understand the dangers. What does the study guide say about teens who DO engage in risky behavior?",
+      "choices": ["They know they are at risk but weigh the social rewards more heavily", "They cannot perceive risk until the prefrontal cortex is mature", "They perceive higher risks than teens who avoid the behavior", "They take risks mainly when they are alone"],
+      "answer": 0,
+      "explanation": "Teens who engage know they are putting themselves at risk but weigh social rewards more heavily. Those who perceive higher risks are less likely to engage, and peer presence magnifies risk-taking."
+    },
+
+    {
+      "id": "c11-01", "chapter": 11, "topic": "Emerging adulthood",
+      "prompt": "Which description best matches the study guide’s account of emerging adulthood?",
+      "choices": ["Ages 18–29; an unstable period with recurrent change and a higher likelihood of risk behaviors", "Ages 30–45; settling into careers and long-term relationships", "Ages 12–18; a time of gender schema formation", "Ages 18–29; the most stable period of life"],
+      "answer": 0,
+      "explanation": "Emerging adulthood (18–29) is considered a distinct stage. It is unstable (job transitions, feeling in flux) and carries higher risk behavior: substance use, drunk driving, loneliness, and risky sex. Ages 30–45 describes established adulthood (Ch. 13)."
+    },
+    {
+      "id": "c11-02", "chapter": 11, "topic": "Crossover effect",
+      "prompt": "White teens use more substances than their Black peers, but Black adults overtake White adults in drug use during emerging adulthood. What is this pattern called, and what is it believed to stem from?",
+      "choices": ["The crossover effect; experiences of discrimination", "The cohort effect; historical events", "The hedonic treadmill; rising income", "Temporizing; delayed identity commitment"],
+      "answer": 0,
+      "explanation": "The study guide describes this as the crossover effect among marginalized groups and attributes it to Black adults' experiences of discrimination. It also notes higher suicidality among Black men than White men in this period."
+    },
+    {
+      "id": "c11-03", "chapter": 11, "topic": "Perry’s theory",
+      "prompt": "A college junior who has come to accept multiple valid perspectives falls back on “there’s one right answer and the professor has it” during a stressful finals week. In Perry’s theory, this is called:",
+      "choices": ["Retreat", "Temporizing", "Escape", "Commitment"],
+      "answer": 0,
+      "explanation": "Retreat = reverting to dualistic thinking in times of stress. Temporizing is delaying movement to the next stage, and escape is moving back to relativism when the demands of commitment prove too taxing."
+    },
+    {
+      "id": "c11-04", "chapter": 11, "topic": "Post-formal / relativistic thought",
+      "prompt": "A young adult mediating a family dispute recognizes that each relative’s view is valid within its own context and accepts that the conflict may have more than one right answer. Sinnott would describe this as:",
+      "choices": ["Relativistic (post-formal) thought", "Dualistic thinking", "Adolescent egocentrism", "Gender schema processing"],
+      "answer": 0,
+      "explanation": "Sinnott and most theorists view post-formal thinking as relativistic thought: recognizing different views as valid in different contexts, accepting more than one right answer, and the phenomenon of competing truths."
+    },
+    {
+      "id": "c11-05", "chapter": 11, "topic": "Kitchener’s reflective judgment",
+      "prompt": "Kitchener’s seven-stage model of reflective judgment separates stages along three dimensions. Which of the following is NOT one of them?",
+      "choices": ["The emotional intensity of the decision", "The certainty of knowledge", "How knowledge is acquired", "The evidence used to justify judgments"],
+      "answer": 0,
+      "explanation": "The three dimensions are certainty of knowledge, how knowledge is acquired, and the evidence used to justify judgments. Reflective judgment is tied to education level: graduate students reason at higher levels than undergraduates."
+    },
+    {
+      "id": "c11-06", "chapter": 11, "topic": "Changing markers of adulthood",
+      "prompt": "Which change in the markers of adulthood is reported in the study guide?",
+      "choices": ["The median age at marriage has risen to about 29, from about 20 in the 1970s", "Young adults now self-identify as adults earlier than in the past", "Sexual activity now begins later than in the past", "The transition to adulthood is now more uniform and clear-cut"],
+      "answer": 0,
+      "explanation": "Today the median age of marriage is about 29 (versus 20 in the 1970s), self-identification as an adult is delayed, and sexual activity begins earlier. Because timing is less uniform, the transition is less clear-cut."
+    },
+
+    {
+      "id": "c12-01", "chapter": 12, "topic": "Adult Attachment Interview",
+      "prompt": "On the Adult Attachment Interview, a mother is uncomfortable with emotional topics, minimizes her childhood experiences of rejection, and is “hyper-independent.” What is her classification, and how is her child most likely attached?",
+      "choices": ["Dismissing; avoidantly attached", "Preoccupied; anxiously attached", "Unresolved; disorganized attachment", "Autonomous; securely attached"],
+      "answer": 0,
+      "explanation": "Dismissing (insecure) adults are linked to early rejection or trauma, are avoidant and uncomfortable with emotion, and often have avoidantly attached children."
+    },
+    {
+      "id": "c12-02", "chapter": 12, "topic": "Adult Attachment Interview",
+      "prompt": "A father with an unprocessed history of abuse, who has not made sense of the abuse or the abuser, would most likely be classified on the AAI as ___, and his child would most likely show ___ attachment.",
+      "choices": ["Unresolved; disorganized", "Preoccupied; anxious", "Dismissing; avoidant", "Cannot classify; secure"],
+      "answer": 0,
+      "explanation": "Unresolved (insecure) = unprocessed trauma and fear, often from abuse. These parents often have children with disorganized attachment."
+    },
+    {
+      "id": "c12-03", "chapter": 12, "topic": "Earned security",
+      "prompt": "An adult who had an insecure childhood attachment, but after years of supportive relationships now describes their past coherently and is classified as autonomous, illustrates:",
+      "choices": ["“Earned secure” attachment", "Foreclosure", "A cannot-classify pattern", "Attachment transfer failure"],
+      "answer": 0,
+      "explanation": "Autonomous (secure) adults were either securely attached in childhood or are “earned secure” — secure attachment can be established later. They often have securely attached children."
+    },
+    {
+      "id": "c12-04", "chapter": 12, "topic": "Attachment transfer",
+      "prompt": "Which sequence best describes the attachment transfer process?",
+      "choices": ["Proximity maintenance shifts to peers (6–17), peers become a safe haven (8–14), and romantic partners eventually replace parents as the primary secure base", "Romantic partners become a safe haven at 8–14, then peers replace them in adulthood", "Parents stay the primary secure base throughout adulthood", "Peers become the primary secure base at ages 6–8 and stay that way for life"],
+      "answer": 0,
+      "explanation": "Proximity maintenance shifts from parents to peers between ages 6–17. Peers become a safe haven between 8–14, and romantic partners eventually replace parents as the primary secure base."
+    },
+    {
+      "id": "c12-05", "chapter": 12, "topic": "Partner preferences",
+      "prompt": "Rank attachment styles from MOST to LEAST preferred as romantic partners, according to the study guide.",
+      "choices": ["Secure → anxious → avoidant", "Secure → avoidant → anxious", "Anxious → secure → avoidant", "Avoidant → anxious → secure"],
+      "answer": 0,
+      "explanation": "Secure individuals are the most attractive partners, anxious individuals are next, and avoidant partners are the least preferred."
+    },
+    {
+      "id": "c12-06", "chapter": 12, "topic": "Pairings and relationship quality",
+      "prompt": "Which statement about attachment pairings is correct?",
+      "choices": ["Avoidant + anxious is the most common insecure pairing, and avoidant men with anxious women show the lowest satisfaction", "Anxious + anxious is the most common insecure pairing", "Avoidant + avoidant pairings report the greatest satisfaction", "Secure + secure pairings are rare"],
+      "answer": 0,
+      "explanation": "Secure + secure is the most common secure pairing, and avoidant + anxious is the most common insecure pairing (avoidant + avoidant and anxious + anxious are rare). The lowest-satisfaction pairing is avoidant men with anxious women."
+    },
+    {
+      "id": "c12-07", "chapter": 12, "topic": "Holland’s theory",
+      "prompt": "A highly social, people-oriented accountant moves into a client-relations role and becomes both more satisfied and better at her job. Holland would call this good personality–job fit:",
+      "choices": ["Convergence", "Job crafting", "Role buffering", "Generativity"],
+      "answer": 0,
+      "explanation": "Holland's goal is compatibility between personality type and work environment. Convergence (good fit) leads to greater job satisfaction and performance. Job crafting is modifying aspects of one's current job, which is more common among higher-ranking employees."
+    },
+
+    {
+      "id": "c13-01", "chapter": 13, "topic": "Gains and losses: adaptive processes",
+      "prompt": "A 52-year-old former marathoner with arthritis switches to brisk walking and adjusts her goals, accepting a lower level of performance. Which adaptive process is this?",
+      "choices": ["Regulation of loss/adaptation", "Growth", "Maintenance/resilience", "Generativity"],
+      "answer": 0,
+      "explanation": "Regulation of loss = reorganizing and adjusting expectations and accepting a lower level of functioning. Growth adds new skills, and maintenance/resilience preserves functioning or restores it after a loss."
+    },
+    {
+      "id": "c13-02", "chapter": 13, "topic": "Personality — OCEAN",
+      "prompt": "Coworkers describe a manager as organized, planful, reliable, efficient, and self-controlled. Which Big Five trait is highest for this manager?",
+      "choices": ["Conscientiousness", "Openness to experience", "Agreeableness", "Extroversion"],
+      "answer": 0,
+      "explanation": "Conscientiousness = organized, planful, reliable, responsible, careful, efficient, self-controlled. Openness covers creativity and curiosity, agreeableness covers warmth and kindness, and extroversion covers being outgoing and energetic."
+    },
+    {
+      "id": "c13-03", "chapter": 13, "topic": "Cognitive changes in middle adulthood",
+      "prompt": "Which pattern of cognitive change in middle adulthood is described in the study guide?",
+      "choices": ["Fluid intelligence and executive functions decline after about 55/60, while crystallized resources (semantic memory) steadily increase", "Crystallized intelligence declines after 30, while fluid intelligence increases", "Both fluid and crystallized intelligence decline sharply at 40", "Working memory improves steadily through the 60s"],
+      "answer": 0,
+      "explanation": "Fluid intelligence (mechanics) and executive functions decline after about 55/60, with slower processing and reduced working memory. Crystallized resources (semantic memory) show a steady increase."
+    },
+    {
+      "id": "c13-04", "chapter": 13, "topic": "Gottman",
+      "prompt": "A couples therapist observes a couple during conflict. According to Gottman, which ratio predicts long-term success, and which “horseman” is especially predictive of divorce?",
+      "choices": ["5:1 positivity to negativity; contempt", "1:1 positivity to negativity; criticism", "5:1 positivity to negativity; stonewalling", "3:1 positivity to negativity; defensiveness"],
+      "answer": 0,
+      "explanation": "A 5:1 ratio of positivity to negativity during conflict predicts long-term success. The Four Horsemen are criticism, defensiveness, contempt, and stonewalling, and contempt is especially predictive of divorce."
+    },
+    {
+      "id": "c13-05", "chapter": 13, "topic": "Why marriages succeed and fail",
+      "prompt": "A long-married couple shrugs off each other’s small annoying habits and keeps a positive view of one another rather than magnifying frustrations. Which hypothesis does this best illustrate?",
+      "choices": ["Maintenance hypothesis", "Disillusionment model", "Social exchange model", "Intrapersonal model"],
+      "answer": 0,
+      "explanation": "Maintenance hypothesis: successful couples use cognitive strategies to keep a positive view of each other and discount the importance of problems. Disillusionment centers on overly romantic expectations, social exchange on the cost of chronic conflict, and intrapersonal models on personal history and temperament."
+    },
+    {
+      "id": "c13-06", "chapter": 13, "topic": "Sternberg and love scripts",
+      "prompt": "According to the study guide, which couple has the best chance of a compatible relationship?",
+      "choices": ["Partners with similar love scripts", "Partners high in passion but low in commitment", "Partners whose love scripts differ, so they balance each other", "Partners who score high on neuroticism"],
+      "answer": 0,
+      "explanation": "Love scripts are beliefs about what relationships should look like, shaped by family, friends, religion, media, gender socialization, and attachment experience. Partners with similar love scripts have the best chance, and conflict often arises when partners want fundamentally different relationships."
+    },
+    {
+      "id": "c13-07", "chapter": 13, "topic": "Generativity",
+      "prompt": "A 48-year-old is raising two teenagers while also coordinating care for her aging mother. Which term describes her situation?",
+      "choices": ["Sandwich generation", "Kinkeeper", "Role buffering", "Established adulthood"],
+      "answer": 0,
+      "explanation": "Sandwich generation = dual caregiving responsibilities for aging parents and children. A kinkeeper maintains extended-family ties, and role buffering means multiple roles help balance success and failure."
+    },
+
+    {
+      "id": "c14-01", "chapter": 14, "topic": "Hedonic vs. eudaimonic happiness",
+      "prompt": "A retired teacher says she feels most fulfilled when volunteering to tutor kids, because it feels like the right and good thing to do. This reflects which kind of happiness?",
+      "choices": ["Eudaimonic", "Hedonic", "Psychological richness", "Satiation"],
+      "answer": 0,
+      "explanation": "Eudaimonic happiness = satisfaction from acting in ethical ways that promote good. Hedonic happiness comes from pursuing pleasure. Psychological richness involves complex, challenging, perspective-shifting experiences."
+    },
+    {
+      "id": "c14-02", "chapter": 14, "topic": "Subjective wellbeing",
+      "prompt": "Self-determination theory explains life satisfaction through the fulfillment of three fundamental psychological needs. What are they?",
+      "choices": ["Autonomy, competence, relatedness", "Passion, intimacy, commitment", "Growth, maintenance, regulation of loss", "Exploration, commitment, achievement"],
+      "answer": 0,
+      "explanation": "Self-determination theory places self-realization at the core of life satisfaction, derived from fulfilling autonomy, competence, and relatedness. Passion, intimacy, and commitment are Sternberg's elements of love."
+    },
+    {
+      "id": "c14-03", "chapter": 14, "topic": "Money and wellbeing",
+      "prompt": "A professional keeps getting raises but finds that each new level of comfort quickly feels normal, and her happiness does not rise. Which source of the paradox of wealth does this illustrate?",
+      "choices": ["The hedonic treadmill effect", "Satisficing", "Convivial collectivism", "Eudaimonic wellbeing"],
+      "answer": 0,
+      "explanation": "The hedonic treadmill effect is listed as a source of the paradox of wealth (Easterlin's paradox: happiness does not rise with income in the U.S.). Other sources are fewer supportive relationships, pursuing an impossible “perfect” life (maximizers), and the despair of poverty."
+    },
+    {
+      "id": "c14-04", "chapter": 14, "topic": "Relationships and wellbeing across cultures",
+      "prompt": "Cross-cultural research on relationships and wellbeing describes different forms of collectivism. Which pairing is correct?",
+      "choices": ["Harmony collectivism — East Asian cultures; convivial collectivism — Latino cultures", "Harmony collectivism — Latino cultures; convivial collectivism — East Asian cultures", "Harmony collectivism — U.S. culture; convivial collectivism — European cultures", "Both terms describe independent happiness in Western cultures"],
+      "answer": 0,
+      "explanation": "The study guide lists harmony collectivism for East Asian cultures and convivial collectivism for Latino cultures. Across cultures, the quality and quantity of social relationships are linked to life satisfaction."
+    }
+  ]
+}

@@ -27,7 +27,7 @@
 <link rel="stylesheet" href="../vendor/fontawesome/css/solid.min.css">
 <link rel="stylesheet" href="../vendor/fontawesome/css/light.min.css">
 <link rel="stylesheet" href="../vendor/fontawesome/css/brands.min.css">
-<link rel="stylesheet" href="app.css?v=20260831auth1">
+<link rel="stylesheet" href="app.css?v=20261119quiz3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
@@ -52,15 +52,31 @@
   };
 </script>
 </head>
-<body class="fds-app" data-view="home">
+<body class="fds-app" data-view="home" data-app="books">
 
 <!-- ================= HOME ================= -->
 <div class="sc-home" id="viewHome">
   <header class="sc-appbar">
     <span class="sc-brand">
       <img class="sc-brand-mark" src="brand/icon-192.png" alt="" width="28" height="28" style="border-radius: 6px">
-      Schaudio
+      <span class="sc-brand-name">Schaudio</span>
     </span>
+    <div class="sc-appswitch">
+      <button class="sc-appswitch-trigger" id="appSwitchBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="appSwitchMenu" aria-label="Switch app">
+        <span id="appSwitchLabel">Audiobooks</span>
+        <i class="fa-solid fa-chevron-down sc-appswitch-caret" aria-hidden="true"></i>
+      </button>
+      <div class="sc-appswitch-menu" id="appSwitchMenu" role="menu" aria-label="Apps" hidden>
+        <button class="sc-appswitch-item" role="menuitemradio" data-app="books" aria-checked="true">
+          <span>Audiobooks</span>
+          <i class="fa-solid fa-check sc-appswitch-check" aria-hidden="true"></i>
+        </button>
+        <button class="sc-appswitch-item" role="menuitemradio" data-app="quiz" aria-checked="false">
+          <span>Quiz</span>
+          <i class="fa-solid fa-check sc-appswitch-check" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
     <span class="sc-appbar-spacer"></span>
     <button class="fds-button" data-variant="ghost" id="themeToggle" aria-label="Switch to dark mode">
       <i id="themeIcon" class="fa-regular fa-moon" aria-hidden="true"></i>
@@ -112,6 +128,7 @@
     <div id="playlistList"></div>
    </div>
   </main>
+  <main class="sc-home-main sc-quiz-main" id="quizMain" aria-label="Quizzes"></main>
 </div>
 
 <!-- ================= READER ================= -->
@@ -372,7 +389,7 @@
 </dialog>
 
 <!-- playlist create/edit -->
-<dialog class="fds-dialog" id="plDialog">
+<dialog class="fds-dialog" id="plDialog" aria-labelledby="plDialogHeading">
   <h2 class="fds-dialog-title" id="plDialogHeading">New playlist</h2>
   <label class="fds-field">
     <span class="fds-label">Title</span>
@@ -391,8 +408,8 @@
 </dialog>
 
 <!-- playlist delete confirm -->
-<dialog class="fds-dialog" id="plDeleteDialog">
-  <h2 class="fds-dialog-title">Delete playlist?</h2>
+<dialog class="fds-dialog" id="plDeleteDialog" aria-labelledby="plDeleteHeading">
+  <h2 class="fds-dialog-title" id="plDeleteHeading">Delete playlist?</h2>
   <p>Delete "<span id="plDeleteName"></span>"? This removes the playlist — not your books, notes or progress.</p>
   <div class="fds-dialog-actions">
     <button class="fds-button" data-variant="ghost" id="plDeleteCancel">Cancel</button>
@@ -492,7 +509,8 @@
 
 <audio id="audio" preload="auto"></audio>
 <script src="google-auth.js?v=20260901auth4"></script>
-<script src="app.js?v=20260901a10"></script>
-<script src="playlists.js?v=b0ae81e06c"></script>
+<script src="app.js?v=20261119quiz3"></script>
+<script src="playlists.js?v=20260901mobile1"></script>
+<script src="quiz.js?v=20261119quiz3"></script>
 </body>
 </html>

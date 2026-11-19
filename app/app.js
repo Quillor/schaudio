@@ -4,7 +4,7 @@
 
 "use strict";
 
-const SLUGS = ["lifespan", "counseling", "research-methods", "wampold-common-factors", "disability-legislation-handout", "disability-rights-timeline", "counseling-values-ethical-dimensions", "dsm-5-failure", "caspi-moffitt-all-for-one", "710-ch2-and-3"];
+const SLUGS = ["lifespan", "counseling", "research-methods", "wampold-common-factors", "disability-legislation-handout", "disability-rights-timeline", "counseling-values-ethical-dimensions", "dsm-5-failure", "caspi-moffitt-all-for-one", "710-ch2-and-3", "carroll-ch1", "mcgiffin-2019", "carroll-ch2", "carroll-ch3", "parent-2019", "molock-2023", "corrigan-ch1", "carroll-ch4"];
 const SPRITE = "../vendor/flavor/icons/sprite.svg";
 const STORE_KEY = "schaudio:v2";
 const CAT_COLORS = ["accent", "success", "warning", "danger", "secondary", "info"];
@@ -109,13 +109,13 @@ const curChapter = () => books.get(current).book.chapters.find((c) => c.n === bo
 /* Align the book's own tokens (punctuation intact) with the TTS word
    timings, which split on whitespace AND punctuation. Greedy consume:
    one text token may span several timing words ("self-esteem"). */
-function alignTokens(text, words) {
+function alignTokens(text, words, narrationTokens = null) {
   const norm = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
   const tokens = text.split(/\s+/);
   const out = [];
   let j = 0;
-  for (const tok of tokens) {
-    const target = norm(tok);
+  for (const [index, tok] of tokens.entries()) {
+    const target = norm(narrationTokens?.[index] ?? tok);
     let startMs = null, endMs = null;
     if (target && j < words.length) {
       let acc = "";
@@ -153,6 +153,15 @@ function alignTokens(text, words) {
   applySpeed();
   $("speed").textContent = speedLabel(store.speed);
   initAuth();
+
+  // Books added by the Hermes narration pipeline are listed in books/library.json
+  // (R2, via dataUrl); SLUGS is the built-in list and the fallback if it is unreachable.
+  try {
+    const r = await fetch(dataUrl("books/library.json"), { cache: "no-cache" });
+    if (r.ok) for (const s of (await r.json()).slugs || []) if (!SLUGS.includes(s)) SLUGS.push(s);
+  } catch (e) {
+    console.warn("Library catalogue unavailable", e);
+  }
 
   const results = await Promise.allSettled(SLUGS.map(async (slug) => {
     const response = await fetch(dataUrl(`books/${slug}/book.json`), { cache: "no-cache" });
@@ -385,6 +394,12 @@ async function openBook(slug, { autoplay = false, chapter = null , fromPlaylist 
   audio.removeAttribute("src");
   const page = $("page");
   page.replaceChildren();
+  if (entry.book.source?.missingPrintedPages?.length && entry.book.source.note) {
+    const notice = document.createElement("p");
+    notice.className = "sc-excerpt-body";
+    notice.textContent = entry.book.source.note;
+    page.appendChild(notice);
+  }
   ch.paragraphs.forEach((text, p) => {
     const el = document.createElement("p");
     el.className = "sc-para";
@@ -460,7 +475,7 @@ async function getManifest(slug, voiceId, chapterN) {
     const m = await fetch(dataUrl(`books/${slug}/${file}`), { cache: "no-cache" })
       .then((r) => (r.ok ? r.json() : null)).catch(() => null);
     const ch = entry.book.chapters.find((c) => c.n === chapterN);
-    if (m && ch) m.paragraphs.forEach((p, i) => { p.tokens = alignTokens(ch.paragraphs[i], p.words); });
+    if (m && ch) m.paragraphs.forEach((p, i) => { p.tokens = alignTokens(ch.paragraphs[i], p.words, p.narrationTokens); });
     entry.manifests[key] = m;
   }
   return entry.manifests[key];
@@ -1394,6 +1409,7 @@ async function pullRemote() {
     applyAppearance(false);
     renderHome();
     renderCategories();
+    if (typeof quizRender === "function") quizRender();
     if (document.body.dataset.view === "reader" && current) {
       const slug = current;
       current = null;
